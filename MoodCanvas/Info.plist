@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>MoodCanvas</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<!-- Injected from Secrets.xcconfig at build time — never hardcoded -->
+	<key>SUPABASE_URL</key>
+	<string>$(SUPABASE_URL)</string>
+	<key>SUPABASE_ANON_KEY</key>
+	<string>$(SUPABASE_ANON_KEY)</string>
+
+	<!-- Required by Firebase Phone Auth: Firebase checks this scheme is registered
+	     before allowing verifyPhoneNumber to proceed. Without it, mainBundleUrlTypes
+	     is nil and Firebase crashes with an IUO force-unwrap at line 109. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app-1-363456569851-ios-af708efaefcf308c66ab5e</string>
+			</array>
+		</dict>
+	</array>
+
+	<key>NSContactsUsageDescription</key>
+	<string>MoodCanvas uses your contacts to help you find and add friends and family to your groups.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Automatic</string>
+	<!-- Disable Firebase's runtime AppDelegate method swizzling.
+	     In SwiftUI apps using @UIApplicationDelegateAdaptor, Firebase's swizzling
+	     intercepts didRegisterForRemoteNotificationsWithDeviceToken before our code
+	     runs, so the APNs token never reaches UserDefaults or Supabase.
+	     We already manually forward all required Firebase calls in AppDelegate.swift:
+	     - Auth.auth().setAPNSToken(_:type:)
+	     - Auth.auth().canHandleNotification(_:)
+	     - Auth.auth().canHandle(_:) -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+
+	<!-- Required for silent APNs pushes (content-available:1) to wake the app
+	     in the background so AppDelegate can call WidgetCenter.reloadAllTimelines() -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+</dict>
+</plist>

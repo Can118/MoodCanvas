@@ -1,0 +1,403 @@
+import Foundation
+import Supabase
+
+// MARK: - DTOs (match Supabase column names exactly)
+
+struct SupabaseUserRecord: Codable {
+    let id: String
+    var name: String?
+    // phone_hash is write-only via Edge Function — never read back to client
+
+    enum CodingKeys: String, CodingKey {
+        case id, name
+    }
+}
+
+struct SupabaseGroupRecord: Codable {
+    let id: String
+    let name: String
+    let type: String
+    let createdBy: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, type
+        case createdBy = "created_by"
+    }
+}
+
+struct SupabaseGroupMemberRecord: Codable {
+    let groupId: String
+    let userId: String
+
+    enum CodingKeys: String, CodingKey {
+        case groupId = "group_id"
+        case userId  = "user_id"
+    }
+}
+
+struct SupabaseMoodRecord: Codable {
+    let userId:  String
+    let groupId: String
+    let mood:    String
+
+    enum CodingKeys: String, CodingKey {
+        case userId  = "user_id"
+        case groupId = "group_id"
+        case mood
+    }
+}
+
+struct SupabaseInvitationRecord: Codable {
+    let id: String
+    let groupId: String
+    let invitedBy: String
+    let invitedUserId: String
+    let status: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case groupId       = "group_id"
+        case invitedBy     = "invited_by"
+        case invitedUserId = "invited_user_id"
+        case status
+    }
+}
+
+struct SupabaseInvitationInsertRecord: Codable {
+    let groupId: String
+    let invitedBy: String
+    let invitedUserId: String
+
+    enum CodingKeys: String, CodingKey {
+        case groupId       = "group_id"
+        case invitedBy     = "invited_by"
+        case invitedUserId = "invited_user_id"
+    }
+}
+
+// MARK: - Service
+
+@MainActor
+final class SupabaseService {
+    static let shared = SupabaseService()
+
+    private var client: SupabaseClient
+    /// True once configure(jwt:) has been called with a non-nil JWT.
+    /// Used by AppDelegate to guard against calling saveDeviceToken before the
+    /// Supabase client has an Authorization header (which would fail RLS with 42501).
+    private(set) var hasJWT: Bool = false
+
+    private init() {
+        // Start unauthenticated — configure() is called after login
+        client = Self.makeClient(jwt: nil)
+    }
+
+    /// Reconfigures the underlying client with a fresh JWT (or nil to reset to anon).
+    /// Called by AuthService after login / token refresh / sign-out.
+    func configure(jwt: String?) {
+        hasJWT = jwt != nil
+        client = Self.makeClient(jwt: jwt)
+    }
+
+    // MARK: - User
+
+    /// Fetch the display name for a user. Returns nil if the name has never been set.
+    func fetchUserName(userId: String) async throws -> String? {
+        struct NameRecord: Codable { let name: String? }
+        let record: NameRecord = try await client
+            .from("users")
+            .select("name")
+            .eq("id", value: userId)
+            .single()
+            .execute()
+            .value
+        return record.name
+    }
+
+    /// Update the display name for the current user.
+    func updateName(_ name: String, userId: String) async throws {
+        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        let record = SupabaseUserRecord(id: userId, name: name)
+        try await client
+            .from("users")
+            .update(record)
+            .eq("id", value: userId)
+            .execute()
+    }
+
+    // MARK: - Device Tokens
+
+    /// Upserts the APNs device token so the backend can send silent mood-update pushes.
+    /// Called from GroupService.fetchGroups() on every app open — fire-and-forget.
+    func saveDeviceToken(_ token: String, userId: String) async {
+        struct TokenRecord: Encodable {
+            let user_id: String
+            let token: String
+            let updated_at: String
+        }
+        let record = TokenRecord(
+            user_id: userId,
+            token: token,
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+        do {
+            try await client
+                .from("device_tokens")
+                .upsert(record, onConflict: "user_id")
+                .execute()
+            print("[Supabase] Device token saved (userId=\(userId.prefix(8))… token=\(token.prefix(8))…)")
+        } catch {
+            print("[Supabase] saveDeviceToken FAILED: \(error) — silent pushes will NOT reach this device")
+        }
+    }
+
+    // MARK: - Groups
+
+    func createGroup(_ group: MoodGroup, createdBy userId: String) async throws {
+        // Validate before touching the network
+        guard !group.name.trimmingCharacters(in: .whitespaces).isEmpty else {
+            throw MCError.edgeFunction("Group name cannot be empty.")
+        }
+
+        let groupRecord = SupabaseGroupRecord(
+            id: group.id,
+            name: group.name,
+            type: group.type.rawValue,
+            createdBy: userId
+        )
+        try await client.from("groups").insert(groupRecord).execute()
+
+        // Only insert the creator — other members will be invited via group_invitations
+        let creatorMember = SupabaseGroupMemberRecord(groupId: group.id, userId: userId)
+        try await client.from("group_members").insert(creatorMember).execute()
+    }
+
+    func fetchGroups(for userId: String) async throws -> [MoodGroup] {
+        // 1. My group IDs
+        let myMemberships: [SupabaseGroupMemberRecord] = try await client
+            .from("group_members")
+            .select()
+            .eq("user_id", value: userId)
+            .execute()
+            .value
+
+        let groupIds = myMemberships.map { $0.groupId }
+        guard !groupIds.isEmpty else { return [] }
+
+        // 2. Group details
+        let groups: [SupabaseGroupRecord] = try await client
+            .from("groups")
+            .select()
+            .in("id", values: groupIds)
+            .execute()
+            .value
+
+        // 3. All members of those groups
+        let allMemberships: [SupabaseGroupMemberRecord] = try await client
+            .from("group_members")
+            .select()
+            .in("group_id", values: groupIds)
+            .execute()
+            .value
+
+        let allUserIds = Array(Set(allMemberships.map { $0.userId }))
+
+        // 4. User records for members (RLS already scopes this)
+        let users: [SupabaseUserRecord] = try await client
+            .from("users")
+            .select("id, name")   // never select phone_hash
+            .in("id", values: allUserIds)
+            .execute()
+            .value
+
+        let userMap: [String: User] = Dictionary(
+            uniqueKeysWithValues: users.map { u in
+                (u.id, User(id: u.id, name: u.name ?? "Unknown", phoneNumber: ""))
+            }
+        )
+
+        // 5. Moods
+        let moodRecords: [SupabaseMoodRecord] = try await client
+            .from("moods")
+            .select()
+            .in("group_id", values: groupIds)
+            .execute()
+            .value
+
+        // 6. Heart counts for couple groups
+        let coupleIds = groups.filter { $0.type == "couple" }.map { $0.id }
+        let heartCountMap = await fetchHeartCounts(for: coupleIds)
+
+        // 7. Assemble
+        return groups.map { g in
+            let memberIds = allMemberships.filter { $0.groupId == g.id }.map { $0.userId }
+            let members   = memberIds.compactMap { userMap[$0] }
+            var moods: [String: Mood] = [:]
+            for m in moodRecords where m.groupId == g.id {
+                if let mood = Mood(rawValue: m.mood) { moods[m.userId] = mood }
+            }
+            return MoodGroup(
+                id: g.id,
+                name: g.name,
+                type: GroupType(rawValue: g.type) ?? .bff,
+                createdBy: g.createdBy,
+                members: members,
+                currentMoods: moods,
+                heartCount: heartCountMap[g.id] ?? 0
+            )
+        }
+    }
+
+    // MARK: - Invitations
+
+    func sendInvitations(_ userIds: [String], toGroup groupId: String, invitedBy inviterId: String) async throws {
+        let records = userIds.map { userId in
+            SupabaseInvitationInsertRecord(groupId: groupId, invitedBy: inviterId, invitedUserId: userId)
+        }
+        try await client
+            .from("group_invitations")
+            .upsert(records, onConflict: "group_id,invited_user_id")
+            .execute()
+    }
+
+    func fetchPendingInvitations(for userId: String) async throws -> [GroupInvitationDetail] {
+        // 1. Pending invitations for this user
+        let invitations: [SupabaseInvitationRecord] = try await client
+            .from("group_invitations")
+            .select()
+            .eq("invited_user_id", value: userId)
+            .eq("status", value: "pending")
+            .execute()
+            .value
+
+        guard !invitations.isEmpty else { return [] }
+
+        // 2. Group details
+        let groupIds = invitations.map { $0.groupId }
+        let groups: [SupabaseGroupRecord] = try await client
+            .from("groups")
+            .select()
+            .in("id", values: groupIds)
+            .execute()
+            .value
+
+        // 3. Inviter names
+        let inviterIds = Array(Set(invitations.map { $0.invitedBy }))
+        let inviters: [SupabaseUserRecord] = try await client
+            .from("users")
+            .select("id, name")
+            .in("id", values: inviterIds)
+            .execute()
+            .value
+
+        // 4. Assemble
+        let groupMap    = Dictionary(uniqueKeysWithValues: groups.map  { ($0.id, $0) })
+        let inviterMap  = Dictionary(uniqueKeysWithValues: inviters.map { ($0.id, $0.name ?? "Unknown") })
+
+        return invitations.compactMap { inv in
+            guard let group = groupMap[inv.groupId] else { return nil }
+            return GroupInvitationDetail(
+                id: inv.id,
+                groupId: inv.groupId,
+                groupName: group.name,
+                groupType: GroupType(rawValue: group.type) ?? .bff,
+                inviterName: inviterMap[inv.invitedBy] ?? "Unknown"
+            )
+        }
+    }
+
+    func searchUsers(query: String) async throws -> [User] {
+        struct SearchResult: Codable {
+            let id: String
+            let name: String?
+        }
+        let results: [SearchResult] = try await client
+            .rpc("search_users", params: ["query": query])
+            .execute()
+            .value
+        return results.map { User(id: $0.id, name: $0.name ?? "Unknown", phoneNumber: "") }
+    }
+
+    func acceptInvitation(_ id: String) async throws {
+        try await client
+            .rpc("accept_group_invitation", params: ["p_invitation_id": id])
+            .execute()
+    }
+
+    func rejectInvitation(_ id: String) async throws {
+        try await client
+            .rpc("reject_group_invitation", params: ["p_invitation_id": id])
+            .execute()
+    }
+
+    // MARK: - Hearts
+
+    /// Calls the `increment_heart` RPC and returns the new authoritative count.
+    func incrementHeart(groupId: String) async throws -> Int {
+        try await client
+            .rpc("increment_heart", params: ["p_group_id": groupId])
+            .execute()
+            .value
+    }
+
+    /// Fetches heart counts for the given couple-group IDs.
+    /// Returns an empty dict on any error so `fetchGroups` degrades gracefully.
+    private func fetchHeartCounts(for groupIds: [String]) async -> [String: Int] {
+        guard !groupIds.isEmpty else { return [:] }
+        struct HeartRecord: Codable {
+            let groupId: String
+            let count: Int
+            enum CodingKeys: String, CodingKey {
+                case groupId = "group_id"
+                case count
+            }
+        }
+        do {
+            let records: [HeartRecord] = try await client
+                .from("couple_hearts")
+                .select("group_id,count")
+                .in("group_id", values: groupIds)
+                .execute()
+                .value
+            return Dictionary(uniqueKeysWithValues: records.map { ($0.groupId, $0.count) })
+        } catch {
+            print("[Supabase] fetchHeartCounts error: \(error)")
+            return [:]
+        }
+    }
+
+    // MARK: - Moods
+
+    func updateMood(_ mood: Mood, userId: String, groupId: String) async throws {
+        let record = SupabaseMoodRecord(userId: userId, groupId: groupId, mood: mood.rawValue)
+        try await client
+            .from("moods")
+            .upsert(record, onConflict: "user_id,group_id")
+            .execute()
+    }
+
+    // MARK: - Private
+
+    private static func makeClient(jwt: String?) -> SupabaseClient {
+        var headers: [String: String] = [:]
+        if let jwt {
+            headers["Authorization"] = "Bearer \(jwt)"
+        }
+        return SupabaseClient(
+            supabaseURL: URL(string: AppConfig.supabaseURL)!,
+            supabaseKey: AppConfig.supabaseAnonKey,
+            options: SupabaseClientOptions(
+                global: SupabaseClientOptions.GlobalOptions(headers: headers)
+            )
+        )
+    }
+}
+
+// MARK: - Array Extension
+
+private extension Array where Element: Hashable {
+    func removingDuplicates() -> [Element] {
+        var seen = Set<Element>()
+        return filter { seen.insert($0).inserted }
+    }
+}

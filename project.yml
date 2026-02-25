@@ -1,0 +1,96 @@
+name: MoodCanvas
+
+options:
+  bundleIdPrefix: com.huseyinturkay.moodcanvas
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.4"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  SWIFT_VERSION: "5.9"
+  IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+  TARGETED_DEVICE_FAMILY: "1"  # iPhone only
+  ENABLE_PREVIEWS: "YES"
+
+packages:
+  FirebaseSDK:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "11.0.0"
+  SupabaseSwift:
+    url: https://github.com/supabase/supabase-swift
+    from: "2.5.0"
+
+targets:
+
+  # ─────────────────────────────────────────
+  # MARK: Main App
+  # ─────────────────────────────────────────
+  MoodCanvas:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MoodCanvas
+      - path: Shared
+    configFiles:
+      Debug:   MoodCanvas/Config/Secrets.xcconfig
+      Release: MoodCanvas/Config/Secrets.xcconfig
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.huseyinturkay.moodcanvas.app
+      INFOPLIST_FILE: MoodCanvas/Info.plist
+      CODE_SIGN_ENTITLEMENTS: MoodCanvas/MoodCanvas.entitlements
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: "L7K5TDTGMX"
+    dependencies:
+      - target: MoodCanvasWidget
+        embed: true
+      - target: MoodCanvasiMessage
+        embed: true
+      - package: FirebaseSDK
+        product: FirebaseAuth
+      - package: SupabaseSwift
+        product: Supabase
+
+  # ─────────────────────────────────────────
+  # MARK: Widget Extension
+  # ─────────────────────────────────────────
+  MoodCanvasWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MoodCanvasWidget
+      - path: Shared
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.huseyinturkay.moodcanvas.app.widget
+      INFOPLIST_FILE: MoodCanvasWidget/Info.plist
+      CODE_SIGN_ENTITLEMENTS: MoodCanvasWidget/MoodCanvasWidget.entitlements
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: "L7K5TDTGMX"
+      SKIP_INSTALL: "YES"
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+
+  # ─────────────────────────────────────────
+  # MARK: iMessage Extension
+  # ─────────────────────────────────────────
+  MoodCanvasiMessage:
+    type: "com.apple.product-type.app-extension.messages"
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MoodCanvasiMessage
+      - path: Shared
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.huseyinturkay.moodcanvas.app.imessage
+      INFOPLIST_FILE: MoodCanvasiMessage/Info.plist
+      CODE_SIGN_ENTITLEMENTS: MoodCanvasiMessage/MoodCanvasiMessage.entitlements
+      CODE_SIGN_STYLE: Automatic
+      DEVELOPMENT_TEAM: "L7K5TDTGMX"
+      SKIP_INSTALL: "YES"
+    dependencies:
+      - sdk: Messages.framework
+      - sdk: SwiftUI.framework

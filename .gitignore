@@ -1,0 +1,23 @@
+# Xcode
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+.build/
+
+# Credentials — NEVER commit
+MoodCanvas/Config/Secrets.xcconfig
+GoogleService-Info.plist
+
+# macOS
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Supabase local temp (contains project-ref, pooler-url — sensitive)
+Supabase/.temp/
+
+# Node / Deno
+node_modules/

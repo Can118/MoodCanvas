@@ -1,0 +1,909 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 63;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C8F61C3FF9DFA2DF32619F0 /* GroupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */; };
+		0C9DC2B58B022D44ACCB91C3 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
+		0ED8073CEF6558DA7A901540 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03E7742DB5065F02E40051B9 /* FirebaseAuth */; };
+		119E618AC1CAA6AABD86BD70 /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
+		11BCA73CB17B23A921F40630 /* AddMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */; };
+		15F5E30450B7D70D909EA01D /* PendingInvitationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2565F5E51B17A08C4B9FE9B2 /* PendingInvitationsView.swift */; };
+		19A003EF7EC68BB76BDA2501 /* GroupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53BFA96DB5675B0BE28E536 /* GroupService.swift */; };
+		1AA663310D024A85E4D3D49B /* MoodCanvasWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5794460D9A4D68FFB20A497E /* MoodCanvasWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1C8B1D676447ABCC5E840DC2 /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1FCB8E83672985FACCA26E /* Mood.swift */; };
+		2A078B81DDBA957B5B2B7A92 /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
+		344BF4424C613A56DB9B1EF7 /* NameEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAEEA6D130696974FEA897B0 /* NameEntryView.swift */; };
+		3456669AE3279F6302F235E0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
+		38DAFA5A5062E15DD61DAD00 /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
+		3B9708CD8CF74A82DEBE5B9D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D9B6307BE0392945C86E1B /* SwiftUI.framework */; };
+		3DA361244A25E2135C498E5B /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
+		3F8CA148ABDA0A6D460ECA68 /* MoodCanvasWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */; };
+		4461654EF95A882F37D86FB5 /* PhoneNumberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5839D65AAD602CA4384E73 /* PhoneNumberView.swift */; };
+		47AACFCBFE40264E5C0124EB /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1FCB8E83672985FACCA26E /* Mood.swift */; };
+		4CF0526373F73B06E0EEC529 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721BF815802CDF00078A688C /* Group.swift */; };
+		4F905B07A6D4060B8B4ABC7F /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534878071BA46E8801BFDBEC /* SupabaseService.swift */; };
+		514E4EE901519D8FC5AC1F90 /* MoodCanvasWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45C8A921F87F0BE569F5014C /* MoodCanvasWidgetBundle.swift */; };
+		51CEB2CA52445ED33DD6F37E /* EdgeFunctionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE55A1876465D7BB38412C8 /* EdgeFunctionService.swift */; };
+		528E12E6622AD73EF12A9E42 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F33D09178DD662E06302BA1 /* WelcomeView.swift */; };
+		55DF239EAF870FD7B10C1F84 /* Messages.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */; };
+		5F3E015482B0F5040F484030 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805CE2719F0CF51C922BEB8E /* AuthService.swift */; };
+		6105544F8CD0FF11378B88E7 /* MoodCanvasiMessage.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		66970FEC6B09DB14CA31EE09 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
+		69BCB1948D837352F28DA261 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D9B6307BE0392945C86E1B /* SwiftUI.framework */; };
+		6FCF07362784304789B11BF8 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721BF815802CDF00078A688C /* Group.swift */; };
+		7A201DA4DC920E8F326BEE0A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D7C42D805AF8ECEC8C38918 /* WidgetKit.framework */; };
+		8B4D9D957A96648E9FD61DDB /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721BF815802CDF00078A688C /* Group.swift */; };
+		92707DE5272A85C64AB4D045 /* CreateGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */; };
+		956DEDDDD786E1F5DBF7B29D /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170202014D8BAB2448574A15 /* VerificationView.swift */; };
+		97B9F5E71E4BF4953314D4FB /* MoodIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22D4AFA7689E04827F66024 /* MoodIntents.swift */; };
+		9A48AC59B7C958367132AF56 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAF79B2900C1228FFAF0137 /* AppDelegate.swift */; };
+		9B72FC0784BDE1CF670C4D3D /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
+		A3B077C55D72727214B1B6CF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */; };
+		B12B48C9A104F1F3E8220C30 /* MoodCanvasiMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD78346673F4E5D691C7B988 /* MoodCanvasiMessageView.swift */; };
+		B9955F511413988E7C467F4A /* Secrets.xcconfig.example in Resources */ = {isa = PBXBuildFile; fileRef = 5564D72B6E1177B3D044DAAA /* Secrets.xcconfig.example */; };
+		B999157D558B6F9BF63C0A14 /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1FCB8E83672985FACCA26E /* Mood.swift */; };
+		B9BFCE701B45E8F70804E8AD /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3C199368F42F421C2C366C /* KeychainService.swift */; };
+		BC8F1017A9C5327BA65C0D03 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504F52BA1607FA129D5BE3E7 /* HomeView.swift */; };
+		C12B8667B3EE8DF8561DC5AC /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C674996366F59315A111FCC7 /* MessagesViewController.swift */; };
+		C246934649BA0E2609207556 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 7A84C7BE8C70128CA9968D48 /* Supabase */; };
+		C8995CBEF14F2AB77425B2F9 /* MoodCanvasApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB212D24559A2E5357D9F00 /* MoodCanvasApp.swift */; };
+		D5C1FAF76D3541A9FD114370 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E03BD0315C48F2397CF4FD5 /* AppConfig.swift */; };
+		D631B1D03C82818581133EC0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54F2092B4A16D5A53FD59D7 /* ContentView.swift */; };
+		D6FD9345D76BC4BC6E64847D /* GroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FA3C198E1309331768A7BB /* GroupDetailView.swift */; };
+		D81C779A143CEC5AE0BD15D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */; };
+		D8FF08FF58C2DB11AE941F6E /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
+		DE0559F410A3CAF9B69CE7F7 /* MoodWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F30B166166DFAF22644D5D /* MoodWidgetEntryView.swift */; };
+		E16B86A9A1EE9B6322128547 /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1DADC44B78814323E109A98 /* ContactPickerView.swift */; };
+		F47D267CD46730314DDCB48E /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
+		F960527C33E95901C150F412 /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
+		FA853CD5090405E14D3786EA /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
+		FE76DA619BE5F04DFC164E24 /* ContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D857802AAD2B6121D8B6B99 /* ContactsService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CE5A68CEEC20E5A90EAB4B73 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 416EB94BE12CA282F498D3F4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A7639C72F73514C8569AF22;
+			remoteInfo = MoodCanvasiMessage;
+		};
+		D402834F5A93FD7DE06FB711 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 416EB94BE12CA282F498D3F4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9CA8EBA7DD8353DB3869D0A6;
+			remoteInfo = MoodCanvasWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D4CF0A424D144B58F3B703D8 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1AA663310D024A85E4D3D49B /* MoodCanvasWidget.appex in Embed Foundation Extensions */,
+				6105544F8CD0FF11378B88E7 /* MoodCanvasiMessage.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		170202014D8BAB2448574A15 /* VerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
+		1E03BD0315C48F2397CF4FD5 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		21102272A92B4A700819E447 /* AppGroupConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupConstants.swift; sourceTree = "<group>"; };
+		2565F5E51B17A08C4B9FE9B2 /* PendingInvitationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationsView.swift; sourceTree = "<group>"; };
+		26FA3C198E1309331768A7BB /* GroupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailView.swift; sourceTree = "<group>"; };
+		3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMembersView.swift; sourceTree = "<group>"; };
+		3D857802AAD2B6121D8B6B99 /* ContactsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsService.swift; sourceTree = "<group>"; };
+		3DE55A1876465D7BB38412C8 /* EdgeFunctionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeFunctionService.swift; sourceTree = "<group>"; };
+		45C8A921F87F0BE569F5014C /* MoodCanvasWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasWidgetBundle.swift; sourceTree = "<group>"; };
+		47F76CCFD3A67EAF397C78CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4B1FCB8E83672985FACCA26E /* Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mood.swift; sourceTree = "<group>"; };
+		4E1728516676036D482A02C1 /* MoodCanvasiMessage.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodCanvasiMessage.entitlements; sourceTree = "<group>"; };
+		4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupRowView.swift; sourceTree = "<group>"; };
+		504F52BA1607FA129D5BE3E7 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		534878071BA46E8801BFDBEC /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
+		5564D72B6E1177B3D044DAAA /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		5794460D9A4D68FFB20A497E /* MoodCanvasWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MoodCanvasWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E3D75FA666D5457640904FA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		6CB2805CC6D8EBAC38F5727D /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6D7C42D805AF8ECEC8C38918 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		6E6625BFF33FE7952C4035E7 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		6F33D09178DD662E06302BA1 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		721BF815802CDF00078A688C /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasWidget.swift; sourceTree = "<group>"; };
+		7BC17E476A932501434573E6 /* WidgetDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataService.swift; sourceTree = "<group>"; };
+		805CE2719F0CF51C922BEB8E /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupView.swift; sourceTree = "<group>"; };
+		8B4CE9928F3CC3376611BE5B /* MoodCanvasWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodCanvasWidget.entitlements; sourceTree = "<group>"; };
+		9C03E5BBB4B0F5916599FAFA /* MoodCanvas.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoodCanvas.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9FB212D24559A2E5357D9F00 /* MoodCanvasApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasApp.swift; sourceTree = "<group>"; };
+		A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ACAF79B2900C1228FFAF0137 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B3F30B166166DFAF22644D5D /* MoodWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodWidgetEntryView.swift; sourceTree = "<group>"; };
+		B53BFA96DB5675B0BE28E536 /* GroupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupService.swift; sourceTree = "<group>"; };
+		BD78346673F4E5D691C7B988 /* MoodCanvasiMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasiMessageView.swift; sourceTree = "<group>"; };
+		C22D4AFA7689E04827F66024 /* MoodIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodIntents.swift; sourceTree = "<group>"; };
+		C54C7951AB75D4B0F40943B8 /* MoodCanvas.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodCanvas.entitlements; sourceTree = "<group>"; };
+		C54F2092B4A16D5A53FD59D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C674996366F59315A111FCC7 /* MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
+		CE5839D65AAD602CA4384E73 /* PhoneNumberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumberView.swift; sourceTree = "<group>"; };
+		CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Messages.framework; path = System/Library/Frameworks/Messages.framework; sourceTree = SDKROOT; };
+		D1DADC44B78814323E109A98 /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPickerView.swift; sourceTree = "<group>"; };
+		DAEEA6D130696974FEA897B0 /* NameEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameEntryView.swift; sourceTree = "<group>"; };
+		DD3C199368F42F421C2C366C /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		DDB16A98BC6A13C08048EA16 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupInvitation.swift; sourceTree = "<group>"; };
+		F6D9B6307BE0392945C86E1B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MoodCanvasiMessage.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		51BC769FDB1B32CDC0E8183B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55DF239EAF870FD7B10C1F84 /* Messages.framework in Frameworks */,
+				69BCB1948D837352F28DA261 /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56E2D0DEAFA870E45425FE71 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0ED8073CEF6558DA7A901540 /* FirebaseAuth in Frameworks */,
+				C246934649BA0E2609207556 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBE1CBB8B2BF876131F7331F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A201DA4DC920E8F326BEE0A /* WidgetKit.framework in Frameworks */,
+				3B9708CD8CF74A82DEBE5B9D /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		03C96F1789423DC9F406D41B /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				DAEEA6D130696974FEA897B0 /* NameEntryView.swift */,
+				CE5839D65AAD602CA4384E73 /* PhoneNumberView.swift */,
+				170202014D8BAB2448574A15 /* VerificationView.swift */,
+				6F33D09178DD662E06302BA1 /* WelcomeView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		18D31DE675606BB5ED6D895E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				805CE2719F0CF51C922BEB8E /* AuthService.swift */,
+				3D857802AAD2B6121D8B6B99 /* ContactsService.swift */,
+				3DE55A1876465D7BB38412C8 /* EdgeFunctionService.swift */,
+				B53BFA96DB5675B0BE28E536 /* GroupService.swift */,
+				DD3C199368F42F421C2C366C /* KeychainService.swift */,
+				534878071BA46E8801BFDBEC /* SupabaseService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		3328D112BE9C68EF5A7086CA /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				21102272A92B4A700819E447 /* AppGroupConstants.swift */,
+			);
+			path = Constants;
+			sourceTree = "<group>";
+		};
+		3781BEE4F4178236C4328940 /* MoodCanvasiMessage */ = {
+			isa = PBXGroup;
+			children = (
+				DDB16A98BC6A13C08048EA16 /* Info.plist */,
+				C674996366F59315A111FCC7 /* MessagesViewController.swift */,
+				4E1728516676036D482A02C1 /* MoodCanvasiMessage.entitlements */,
+				BD78346673F4E5D691C7B988 /* MoodCanvasiMessageView.swift */,
+			);
+			path = MoodCanvasiMessage;
+			sourceTree = "<group>";
+		};
+		4607D5BF2F4E843F004E55A0 /* DesignComponents */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = DesignComponents;
+			sourceTree = "<group>";
+		};
+		4B16A71BCB03E18FE88EA173 /* Invitations */ = {
+			isa = PBXGroup;
+			children = (
+				2565F5E51B17A08C4B9FE9B2 /* PendingInvitationsView.swift */,
+			);
+			path = Invitations;
+			sourceTree = "<group>";
+		};
+		6BB79EF1B43B08AFC0D5CE9A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				7BC17E476A932501434573E6 /* WidgetDataService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		6E12DDDF5CFF205EC6B05E3E /* Groups */ = {
+			isa = PBXGroup;
+			children = (
+				3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */,
+				D1DADC44B78814323E109A98 /* ContactPickerView.swift */,
+				84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */,
+				26FA3C198E1309331768A7BB /* GroupDetailView.swift */,
+			);
+			path = Groups;
+			sourceTree = "<group>";
+		};
+		7817639D644DAAD19747FE1F = {
+			isa = PBXGroup;
+			children = (
+				4607D5BF2F4E843F004E55A0 /* DesignComponents */,
+				C7811BB2E35E3142964BAD45 /* MoodCanvas */,
+				3781BEE4F4178236C4328940 /* MoodCanvasiMessage */,
+				82F82254C9D1FC3192E0A4D4 /* MoodCanvasWidget */,
+				A440B72945892829441D314D /* Shared */,
+				B9F55DD0CDE846F3B6F597F7 /* Frameworks */,
+				EB8F0EE85D1A9EAD2CF94124 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		82F82254C9D1FC3192E0A4D4 /* MoodCanvasWidget */ = {
+			isa = PBXGroup;
+			children = (
+				5E3D75FA666D5457640904FA /* Info.plist */,
+				8B4CE9928F3CC3376611BE5B /* MoodCanvasWidget.entitlements */,
+				7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */,
+				45C8A921F87F0BE569F5014C /* MoodCanvasWidgetBundle.swift */,
+				C22D4AFA7689E04827F66024 /* MoodIntents.swift */,
+				B3F30B166166DFAF22644D5D /* MoodWidgetEntryView.swift */,
+			);
+			path = MoodCanvasWidget;
+			sourceTree = "<group>";
+		};
+		9855D0952F0B7696805D05B3 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				ACAF79B2900C1228FFAF0137 /* AppDelegate.swift */,
+				C54F2092B4A16D5A53FD59D7 /* ContentView.swift */,
+				9FB212D24559A2E5357D9F00 /* MoodCanvasApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A440B72945892829441D314D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3328D112BE9C68EF5A7086CA /* Constants */,
+				B7142A78AAB9600B674B255F /* Models */,
+				6BB79EF1B43B08AFC0D5CE9A /* Services */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A490AF413E9F2832A38E5340 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B7142A78AAB9600B674B255F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				721BF815802CDF00078A688C /* Group.swift */,
+				E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */,
+				4B1FCB8E83672985FACCA26E /* Mood.swift */,
+				6E6625BFF33FE7952C4035E7 /* User.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B9F55DD0CDE846F3B6F597F7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */,
+				F6D9B6307BE0392945C86E1B /* SwiftUI.framework */,
+				6D7C42D805AF8ECEC8C38918 /* WidgetKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BF7261C6837E82E5DA8C026C /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */,
+				504F52BA1607FA129D5BE3E7 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		C7811BB2E35E3142964BAD45 /* MoodCanvas */ = {
+			isa = PBXGroup;
+			children = (
+				9855D0952F0B7696805D05B3 /* App */,
+				F36CE6643EE3EFB3A79E121D /* Config */,
+				6E12DDDF5CFF205EC6B05E3E /* Groups */,
+				BF7261C6837E82E5DA8C026C /* Home */,
+				4B16A71BCB03E18FE88EA173 /* Invitations */,
+				03C96F1789423DC9F406D41B /* Onboarding */,
+				A490AF413E9F2832A38E5340 /* Resources */,
+				18D31DE675606BB5ED6D895E /* Services */,
+				602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */,
+				47F76CCFD3A67EAF397C78CA /* Info.plist */,
+				C54C7951AB75D4B0F40943B8 /* MoodCanvas.entitlements */,
+			);
+			path = MoodCanvas;
+			sourceTree = "<group>";
+		};
+		EB8F0EE85D1A9EAD2CF94124 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9C03E5BBB4B0F5916599FAFA /* MoodCanvas.app */,
+				FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */,
+				5794460D9A4D68FFB20A497E /* MoodCanvasWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F36CE6643EE3EFB3A79E121D /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				1E03BD0315C48F2397CF4FD5 /* AppConfig.swift */,
+				6CB2805CC6D8EBAC38F5727D /* Secrets.xcconfig */,
+				5564D72B6E1177B3D044DAAA /* Secrets.xcconfig.example */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A7639C72F73514C8569AF22 /* MoodCanvasiMessage */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 072B1B394F9FDD57CBF11C20 /* Build configuration list for PBXNativeTarget "MoodCanvasiMessage" */;
+			buildPhases = (
+				C6EAE675F9FACA65B982DB4C /* Sources */,
+				51BC769FDB1B32CDC0E8183B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MoodCanvasiMessage;
+			packageProductDependencies = (
+			);
+			productName = MoodCanvasiMessage;
+			productReference = FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */;
+			productType = "com.apple.product-type.app-extension.messages";
+		};
+		9CA8EBA7DD8353DB3869D0A6 /* MoodCanvasWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 08E343C2108182DF47272D1A /* Build configuration list for PBXNativeTarget "MoodCanvasWidget" */;
+			buildPhases = (
+				A758BCDB5260B5CFDA60A119 /* Sources */,
+				FBE1CBB8B2BF876131F7331F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MoodCanvasWidget;
+			packageProductDependencies = (
+			);
+			productName = MoodCanvasWidget;
+			productReference = 5794460D9A4D68FFB20A497E /* MoodCanvasWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		A0772D6EB2B0AA4A4137338B /* MoodCanvas */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 75ACA48E0875DE35F8ADCDEA /* Build configuration list for PBXNativeTarget "MoodCanvas" */;
+			buildPhases = (
+				54353B81EA737768994367C1 /* Sources */,
+				802303096BE7C16C87A1571F /* Resources */,
+				56E2D0DEAFA870E45425FE71 /* Frameworks */,
+				D4CF0A424D144B58F3B703D8 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2141E0A359B99317296EF30C /* PBXTargetDependency */,
+				74C486B95CAD4570F7BC76C4 /* PBXTargetDependency */,
+			);
+			name = MoodCanvas;
+			packageProductDependencies = (
+				03E7742DB5065F02E40051B9 /* FirebaseAuth */,
+				7A84C7BE8C70128CA9968D48 /* Supabase */,
+			);
+			productName = MoodCanvas;
+			productReference = 9C03E5BBB4B0F5916599FAFA /* MoodCanvas.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		416EB94BE12CA282F498D3F4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					1A7639C72F73514C8569AF22 = {
+						DevelopmentTeam = L7K5TDTGMX;
+						ProvisioningStyle = Automatic;
+					};
+					9CA8EBA7DD8353DB3869D0A6 = {
+						DevelopmentTeam = L7K5TDTGMX;
+						ProvisioningStyle = Automatic;
+					};
+					A0772D6EB2B0AA4A4137338B = {
+						DevelopmentTeam = L7K5TDTGMX;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = FE0DAA82D405343A090AEF1F /* Build configuration list for PBXProject "MoodCanvas" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 7817639D644DAAD19747FE1F;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				43F9E3E6DD55FDB9C6480E61 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				33F4E1EA15A29358150502C1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A0772D6EB2B0AA4A4137338B /* MoodCanvas */,
+				9CA8EBA7DD8353DB3869D0A6 /* MoodCanvasWidget */,
+				1A7639C72F73514C8569AF22 /* MoodCanvasiMessage */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		802303096BE7C16C87A1571F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D81C779A143CEC5AE0BD15D8 /* Assets.xcassets in Resources */,
+				A3B077C55D72727214B1B6CF /* GoogleService-Info.plist in Resources */,
+				B9955F511413988E7C467F4A /* Secrets.xcconfig.example in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		54353B81EA737768994367C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				11BCA73CB17B23A921F40630 /* AddMembersView.swift in Sources */,
+				D5C1FAF76D3541A9FD114370 /* AppConfig.swift in Sources */,
+				9A48AC59B7C958367132AF56 /* AppDelegate.swift in Sources */,
+				38DAFA5A5062E15DD61DAD00 /* AppGroupConstants.swift in Sources */,
+				5F3E015482B0F5040F484030 /* AuthService.swift in Sources */,
+				E16B86A9A1EE9B6322128547 /* ContactPickerView.swift in Sources */,
+				FE76DA619BE5F04DFC164E24 /* ContactsService.swift in Sources */,
+				D631B1D03C82818581133EC0 /* ContentView.swift in Sources */,
+				92707DE5272A85C64AB4D045 /* CreateGroupView.swift in Sources */,
+				51CEB2CA52445ED33DD6F37E /* EdgeFunctionService.swift in Sources */,
+				4CF0526373F73B06E0EEC529 /* Group.swift in Sources */,
+				D6FD9345D76BC4BC6E64847D /* GroupDetailView.swift in Sources */,
+				9B72FC0784BDE1CF670C4D3D /* GroupInvitation.swift in Sources */,
+				0C8F61C3FF9DFA2DF32619F0 /* GroupRowView.swift in Sources */,
+				19A003EF7EC68BB76BDA2501 /* GroupService.swift in Sources */,
+				BC8F1017A9C5327BA65C0D03 /* HomeView.swift in Sources */,
+				B9BFCE701B45E8F70804E8AD /* KeychainService.swift in Sources */,
+				1C8B1D676447ABCC5E840DC2 /* Mood.swift in Sources */,
+				C8995CBEF14F2AB77425B2F9 /* MoodCanvasApp.swift in Sources */,
+				344BF4424C613A56DB9B1EF7 /* NameEntryView.swift in Sources */,
+				15F5E30450B7D70D909EA01D /* PendingInvitationsView.swift in Sources */,
+				4461654EF95A882F37D86FB5 /* PhoneNumberView.swift in Sources */,
+				4F905B07A6D4060B8B4ABC7F /* SupabaseService.swift in Sources */,
+				0C9DC2B58B022D44ACCB91C3 /* User.swift in Sources */,
+				956DEDDDD786E1F5DBF7B29D /* VerificationView.swift in Sources */,
+				528E12E6622AD73EF12A9E42 /* WelcomeView.swift in Sources */,
+				F47D267CD46730314DDCB48E /* WidgetDataService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A758BCDB5260B5CFDA60A119 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA853CD5090405E14D3786EA /* AppGroupConstants.swift in Sources */,
+				8B4D9D957A96648E9FD61DDB /* Group.swift in Sources */,
+				F960527C33E95901C150F412 /* GroupInvitation.swift in Sources */,
+				B999157D558B6F9BF63C0A14 /* Mood.swift in Sources */,
+				3F8CA148ABDA0A6D460ECA68 /* MoodCanvasWidget.swift in Sources */,
+				514E4EE901519D8FC5AC1F90 /* MoodCanvasWidgetBundle.swift in Sources */,
+				97B9F5E71E4BF4953314D4FB /* MoodIntents.swift in Sources */,
+				DE0559F410A3CAF9B69CE7F7 /* MoodWidgetEntryView.swift in Sources */,
+				3456669AE3279F6302F235E0 /* User.swift in Sources */,
+				2A078B81DDBA957B5B2B7A92 /* WidgetDataService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C6EAE675F9FACA65B982DB4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DA361244A25E2135C498E5B /* AppGroupConstants.swift in Sources */,
+				6FCF07362784304789B11BF8 /* Group.swift in Sources */,
+				119E618AC1CAA6AABD86BD70 /* GroupInvitation.swift in Sources */,
+				C12B8667B3EE8DF8561DC5AC /* MessagesViewController.swift in Sources */,
+				47AACFCBFE40264E5C0124EB /* Mood.swift in Sources */,
+				B12B48C9A104F1F3E8220C30 /* MoodCanvasiMessageView.swift in Sources */,
+				66970FEC6B09DB14CA31EE09 /* User.swift in Sources */,
+				D8FF08FF58C2DB11AE941F6E /* WidgetDataService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2141E0A359B99317296EF30C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9CA8EBA7DD8353DB3869D0A6 /* MoodCanvasWidget */;
+			targetProxy = D402834F5A93FD7DE06FB711 /* PBXContainerItemProxy */;
+		};
+		74C486B95CAD4570F7BC76C4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A7639C72F73514C8569AF22 /* MoodCanvasiMessage */;
+			targetProxy = CE5A68CEEC20E5A90EAB4B73 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		120103715646908FD1ED9C14 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		149D3F73C59DC36AC8A3A284 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "iMessage App Icon";
+				CODE_SIGN_ENTITLEMENTS = MoodCanvasiMessage/MoodCanvasiMessage.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L7K5TDTGMX;
+				INFOPLIST_FILE = MoodCanvasiMessage/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huseyinturkay.moodcanvas.app.imessage;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		208EFBD12E0FA8E02BE3EC0C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MoodCanvasWidget/MoodCanvasWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L7K5TDTGMX;
+				INFOPLIST_FILE = MoodCanvasWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huseyinturkay.moodcanvas.app.widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4876C346AFE82E4D444E625A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "iMessage App Icon";
+				CODE_SIGN_ENTITLEMENTS = MoodCanvasiMessage/MoodCanvasiMessage.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L7K5TDTGMX;
+				INFOPLIST_FILE = MoodCanvasiMessage/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huseyinturkay.moodcanvas.app.imessage;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7902C245FBA9A122A765CA63 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MoodCanvasWidget/MoodCanvasWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L7K5TDTGMX;
+				INFOPLIST_FILE = MoodCanvasWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huseyinturkay.moodcanvas.app.widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B9D0DA311E45E92CA1FF81C4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6CB2805CC6D8EBAC38F5727D /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MoodCanvas/MoodCanvas.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L7K5TDTGMX;
+				INFOPLIST_FILE = MoodCanvas/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huseyinturkay.moodcanvas.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF1739892D4F9DCC705AC3BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6CB2805CC6D8EBAC38F5727D /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MoodCanvas/MoodCanvas.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L7K5TDTGMX;
+				INFOPLIST_FILE = MoodCanvas/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huseyinturkay.moodcanvas.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E6B156FBC431BCC7662E1A7D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		072B1B394F9FDD57CBF11C20 /* Build configuration list for PBXNativeTarget "MoodCanvasiMessage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				149D3F73C59DC36AC8A3A284 /* Debug */,
+				4876C346AFE82E4D444E625A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		08E343C2108182DF47272D1A /* Build configuration list for PBXNativeTarget "MoodCanvasWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7902C245FBA9A122A765CA63 /* Debug */,
+				208EFBD12E0FA8E02BE3EC0C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		75ACA48E0875DE35F8ADCDEA /* Build configuration list for PBXNativeTarget "MoodCanvas" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9D0DA311E45E92CA1FF81C4 /* Debug */,
+				BF1739892D4F9DCC705AC3BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FE0DAA82D405343A090AEF1F /* Build configuration list for PBXProject "MoodCanvas" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				120103715646908FD1ED9C14 /* Debug */,
+				E6B156FBC431BCC7662E1A7D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		33F4E1EA15A29358150502C1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.0;
+			};
+		};
+		43F9E3E6DD55FDB9C6480E61 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		03E7742DB5065F02E40051B9 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 43F9E3E6DD55FDB9C6480E61 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		7A84C7BE8C70128CA9968D48 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 33F4E1EA15A29358150502C1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 416EB94BE12CA282F498D3F4 /* Project object */;
+}
