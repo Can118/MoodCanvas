@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,6 +19,7 @@
 		2A078B81DDBA957B5B2B7A92 /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
 		344BF4424C613A56DB9B1EF7 /* NameEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAEEA6D130696974FEA897B0 /* NameEntryView.swift */; };
 		3456669AE3279F6302F235E0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
+		378D47D535263EEDFE09C288 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 013EB86F1C13D1A1599CFF12 /* Assets.xcassets */; };
 		38DAFA5A5062E15DD61DAD00 /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
 		3B9708CD8CF74A82DEBE5B9D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D9B6307BE0392945C86E1B /* SwiftUI.framework */; };
 		3DA361244A25E2135C498E5B /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
@@ -63,6 +64,8 @@
 		F960527C33E95901C150F412 /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
 		FA853CD5090405E14D3786EA /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
 		FE76DA619BE5F04DFC164E24 /* ContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D857802AAD2B6121D8B6B99 /* ContactsService.swift */; };
+		47569EE59F2759192FBDEC37 /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 137228D1795ACE00551854FC /* InstrumentSerif-Italic.ttf */; };
+		D68012857599217793959444 /* EBGaramond-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F7842ED93DC618B2738F0AC /* EBGaramond-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +101,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		013EB86F1C13D1A1599CFF12 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		170202014D8BAB2448574A15 /* VerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
 		1E03BD0315C48F2397CF4FD5 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		21102272A92B4A700819E447 /* AppGroupConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupConstants.swift; sourceTree = "<group>"; };
@@ -113,7 +117,7 @@
 		4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupRowView.swift; sourceTree = "<group>"; };
 		504F52BA1607FA129D5BE3E7 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		534878071BA46E8801BFDBEC /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
-		5564D72B6E1177B3D044DAAA /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		5564D72B6E1177B3D044DAAA /* Secrets.xcconfig.example */ = {isa = PBXFileReference; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 		5794460D9A4D68FFB20A497E /* MoodCanvasWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MoodCanvasWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E3D75FA666D5457640904FA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -127,7 +131,7 @@
 		805CE2719F0CF51C922BEB8E /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupView.swift; sourceTree = "<group>"; };
 		8B4CE9928F3CC3376611BE5B /* MoodCanvasWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodCanvasWidget.entitlements; sourceTree = "<group>"; };
-		9C03E5BBB4B0F5916599FAFA /* MoodCanvas.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoodCanvas.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C03E5BBB4B0F5916599FAFA /* MoodCanvas.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MoodCanvas.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FB212D24559A2E5357D9F00 /* MoodCanvasApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasApp.swift; sourceTree = "<group>"; };
 		A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ACAF79B2900C1228FFAF0137 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -147,6 +151,8 @@
 		E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupInvitation.swift; sourceTree = "<group>"; };
 		F6D9B6307BE0392945C86E1B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MoodCanvasiMessage.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		137228D1795ACE00551854FC /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "InstrumentSerif-Italic.ttf"; path = "Fonts/InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
+		6F7842ED93DC618B2738F0AC /* EBGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "EBGaramond-Medium.ttf"; path = "Fonts/EBGaramond-Medium.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -223,13 +229,6 @@
 			path = MoodCanvasiMessage;
 			sourceTree = "<group>";
 		};
-		4607D5BF2F4E843F004E55A0 /* DesignComponents */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = DesignComponents;
-			sourceTree = "<group>";
-		};
 		4B16A71BCB03E18FE88EA173 /* Invitations */ = {
 			isa = PBXGroup;
 			children = (
@@ -260,7 +259,6 @@
 		7817639D644DAAD19747FE1F = {
 			isa = PBXGroup;
 			children = (
-				4607D5BF2F4E843F004E55A0 /* DesignComponents */,
 				C7811BB2E35E3142964BAD45 /* MoodCanvas */,
 				3781BEE4F4178236C4328940 /* MoodCanvasiMessage */,
 				82F82254C9D1FC3192E0A4D4 /* MoodCanvasWidget */,
@@ -273,6 +271,9 @@
 		82F82254C9D1FC3192E0A4D4 /* MoodCanvasWidget */ = {
 			isa = PBXGroup;
 			children = (
+				013EB86F1C13D1A1599CFF12 /* Assets.xcassets */,
+				137228D1795ACE00551854FC /* InstrumentSerif-Italic.ttf */,
+				6F7842ED93DC618B2738F0AC /* EBGaramond-Medium.ttf */,
 				5E3D75FA666D5457640904FA /* Info.plist */,
 				8B4CE9928F3CC3376611BE5B /* MoodCanvasWidget.entitlements */,
 				7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */,
@@ -405,6 +406,7 @@
 			buildConfigurationList = 08E343C2108182DF47272D1A /* Build configuration list for PBXNativeTarget "MoodCanvasWidget" */;
 			buildPhases = (
 				A758BCDB5260B5CFDA60A119 /* Sources */,
+				3A613CCDB04C0B18DAB225C4 /* Resources */,
 				FBE1CBB8B2BF876131F7331F /* Frameworks */,
 			);
 			buildRules = (
@@ -479,6 +481,7 @@
 				43F9E3E6DD55FDB9C6480E61 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				33F4E1EA15A29358150502C1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -490,6 +493,16 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3A613CCDB04C0B18DAB225C4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				378D47D535263EEDFE09C288 /* Assets.xcassets in Resources */,
+				47569EE59F2759192FBDEC37 /* InstrumentSerif-Italic.ttf in Resources */,
+				D68012857599217793959444 /* EBGaramond-Medium.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		802303096BE7C16C87A1571F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;

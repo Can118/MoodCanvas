@@ -36,14 +36,16 @@ struct SupabaseGroupMemberRecord: Codable {
 }
 
 struct SupabaseMoodRecord: Codable {
-    let userId:  String
-    let groupId: String
-    let mood:    String
+    let userId:    String
+    let groupId:   String
+    let mood:      String
+    let updatedAt: String?
 
     enum CodingKeys: String, CodingKey {
-        case userId  = "user_id"
-        case groupId = "group_id"
+        case userId    = "user_id"
+        case groupId   = "group_id"
         case mood
+        case updatedAt = "updated_at"
     }
 }
 
@@ -216,10 +218,10 @@ final class SupabaseService {
             }
         )
 
-        // 5. Moods
+        // 5. Moods (including updated_at for moodTimestamps)
         let moodRecords: [SupabaseMoodRecord] = try await client
             .from("moods")
-            .select()
+            .select("user_id,group_id,mood,updated_at")
             .in("group_id", values: groupIds)
             .execute()
             .value
@@ -232,9 +234,13 @@ final class SupabaseService {
         return groups.map { g in
             let memberIds = allMemberships.filter { $0.groupId == g.id }.map { $0.userId }
             let members   = memberIds.compactMap { userMap[$0] }
-            var moods: [String: Mood] = [:]
+            var moods:      [String: Mood]   = [:]
+            var timestamps: [String: String] = [:]
             for m in moodRecords where m.groupId == g.id {
-                if let mood = Mood(rawValue: m.mood) { moods[m.userId] = mood }
+                if let mood = Mood(rawValue: m.mood) {
+                    moods[m.userId] = mood
+                    if let ts = m.updatedAt { timestamps[m.userId] = ts }
+                }
             }
             return MoodGroup(
                 id: g.id,
@@ -243,6 +249,7 @@ final class SupabaseService {
                 createdBy: g.createdBy,
                 members: members,
                 currentMoods: moods,
+                moodTimestamps: timestamps,
                 heartCount: heartCountMap[g.id] ?? 0
             )
         }
@@ -369,7 +376,18 @@ final class SupabaseService {
     // MARK: - Moods
 
     func updateMood(_ mood: Mood, userId: String, groupId: String) async throws {
-        let record = SupabaseMoodRecord(userId: userId, groupId: groupId, mood: mood.rawValue)
+        struct MoodUpsert: Encodable {
+            let user_id:    String
+            let group_id:   String
+            let mood:       String
+            let updated_at: String
+        }
+        let record = MoodUpsert(
+            user_id: userId,
+            group_id: groupId,
+            mood: mood.rawValue,
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
         try await client
             .from("moods")
             .upsert(record, onConflict: "user_id,group_id")

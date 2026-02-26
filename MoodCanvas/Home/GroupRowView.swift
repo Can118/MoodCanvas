@@ -26,7 +26,7 @@ struct GroupRowView: View {
 
             // Latest moods preview
             HStack(spacing: -4) {
-                ForEach(Array(group.currentMoods.values.prefix(3)), id: \.rawValue) { mood in
+                ForEach(Array(group.currentMoods.prefix(3)), id: \.key) { _, mood in
                     Text(mood.emoji)
                         .font(.subheadline)
                 }

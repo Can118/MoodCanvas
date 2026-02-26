@@ -7,18 +7,19 @@ import Foundation
 /// the full Supabase Swift SDK (which is only linked into the main app target).
 struct WidgetDataService {
 
-    /// Upserts the current user's mood for a group directly to Supabase.
-    /// Called from SetMoodIntent so other devices see the change within their
-    /// next 5-minute refresh cycle without requiring the main app to be opened.
-    /// Silently no-ops on any error; the pending widgetMood_* key acts as fallback.
-    static func syncMood(_ mood: Mood, userId: String, groupId: String) async {
+    /// Upserts the current user's mood for a group directly to Supabase,
+    /// then calls notifyMoodUpdate to push a silent APNs wakeup to other devices.
+    /// Returns true if the Supabase write succeeded, false on any error.
+    /// The pending widgetMood_* key acts as a retry fallback on failure.
+    @discardableResult
+    static func syncMood(_ mood: Mood, userId: String, groupId: String) async -> Bool {
         let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
         guard
             let jwt         = defaults?.string(forKey: "widget_jwt"),
             let supabaseURL = defaults?.string(forKey: "widget_supabase_url"),
             let anonKey     = defaults?.string(forKey: "widget_supabase_anon_key"),
             let url = URL(string: "\(supabaseURL)/rest/v1/moods")
-        else { return }
+        else { return false }
 
         var request = URLRequest(url: url, timeoutInterval: 10)
         request.httpMethod = "POST"
@@ -29,29 +30,37 @@ struct WidgetDataService {
         request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
 
         struct MoodPayload: Encodable {
-            let user_id:  String
-            let group_id: String
-            let mood:     String
+            let user_id:    String
+            let group_id:   String
+            let mood:       String
+            let updated_at: String
         }
         request.httpBody = try? JSONEncoder().encode(
-            MoodPayload(user_id: userId, group_id: groupId, mood: mood.rawValue)
+            MoodPayload(
+                user_id: userId,
+                group_id: groupId,
+                mood: mood.rawValue,
+                updated_at: ISO8601DateFormatter().string(from: Date())
+            )
         )
 
         // If the upsert succeeded (any 2xx), notify other group members via silent APNs push.
         // We accept the full 2xx range because PostgREST may return 200 or 201 depending on
-        // whether a row was inserted vs. updated. Failures are logged — the pending
-        // widgetMood_* key is the fallback so the mood isn't lost.
+        // whether a row was inserted vs. updated.
         if let (data, response) = try? await URLSession.shared.data(for: request) {
             let status = (response as? HTTPURLResponse)?.statusCode ?? 0
             if (200...299).contains(status) {
                 print("[Widget] syncMood succeeded (HTTP \(status)) — sending push to group members")
                 await notifyMoodUpdate(groupId: groupId, userId: userId)
+                return true
             } else {
                 let body = String(data: data, encoding: .utf8) ?? "(no body)"
                 print("[Widget] syncMood failed — HTTP \(status): \(body)")
+                return false
             }
         } else {
             print("[Widget] syncMood network error (no response)")
+            return false
         }
     }
 

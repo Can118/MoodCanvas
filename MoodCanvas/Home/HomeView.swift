@@ -84,6 +84,13 @@ struct HomeView: View {
                     }
                 }
             }
+            // Refresh when a mood-update silent push arrives while the app is already
+            // in the foreground (scenePhase stays .active so onChange never fires).
+            .onReceive(NotificationCenter.default.publisher(for: .moodUpdateReceived)) { _ in
+                Task {
+                    await groupService.fetchGroups()
+                }
+            }
         }
     }
 

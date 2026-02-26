@@ -3,6 +3,13 @@ import FirebaseCore
 import FirebaseAuth
 import WidgetKit
 
+extension Notification.Name {
+    /// Posted on MainActor when a mood-update silent push arrives.
+    /// HomeView observes this to refresh while the app is already in the foreground
+    /// (scenePhase stays .active and onChange never fires in that case).
+    static let moodUpdateReceived = Notification.Name("MoodCanvasMoodUpdate")
+}
+
 class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication,
@@ -89,42 +96,48 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     private func handleMoodUpdatePush() async {
         let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
 
-        // 1. Try to issue a fresh Supabase JWT using the cached Firebase session.
-        //    The widget JWT in AppGroup is valid for 7 days, but refreshing it here
-        //    on every incoming push keeps the window from ever getting stale.
-        //    Falls back to copying whatever is in Keychain if Firebase is unavailable.
-        if let firebaseUser = Auth.auth().currentUser {
+        // 1. Keep the AppGroup JWT fresh so the widget can authenticate.
+        //    Happy path (JWT still valid for > 5 min): 0 network calls — just copy
+        //    from Keychain to AppGroup and move on immediately.
+        //    Sad path (JWT expired/expiring): 2 network calls to refresh via Firebase.
+        //    We never pre-fetch groups here — the widget's own timeline() always
+        //    fetches fresh data after reloadAllTimelines(), so a pre-fetch here
+        //    would only add latency before the widget reload fires.
+        if let stored = KeychainService.load(.supabaseJWT),
+           !KeychainService.jwtIsExpiredOrExpiringSoon(stored) {
+            defaults?.set(stored, forKey: "widget_jwt")
+            print("[Push] JWT fresh — synced to AppGroup (no network)")
+        } else if let firebaseUser = Auth.auth().currentUser {
             do {
                 let idToken = try await firebaseUser.getIDToken(forcingRefresh: false)
                 let newJWT = try await EdgeFunctionService.authenticate(firebaseIDToken: idToken)
                 KeychainService.save(.supabaseJWT, value: newJWT)
+                SupabaseService.shared.configure(jwt: newJWT)
                 defaults?.set(newJWT, forKey: "widget_jwt")
-                print("[Push] JWT refreshed from Firebase (\(newJWT.prefix(20))…)")
+                print("[Push] JWT refreshed — synced to AppGroup")
             } catch {
-                print("[Push] JWT refresh failed (\(error.localizedDescription)) — falling back to Keychain copy")
+                print("[Push] JWT refresh failed (\(error.localizedDescription)) — using existing Keychain JWT")
                 if let stored = KeychainService.load(.supabaseJWT) {
                     defaults?.set(stored, forKey: "widget_jwt")
                 }
             }
         } else {
-            print("[Push] No active Firebase session — copying Keychain JWT to AppGroup")
             if let stored = KeychainService.load(.supabaseJWT) {
                 defaults?.set(stored, forKey: "widget_jwt")
             }
+            print("[Push] No Firebase session — copied Keychain JWT to AppGroup")
         }
 
-        // 2. Pre-fetch the latest groups and write them into the AppGroup cache
-        //    BEFORE telling WidgetKit to reload. The widget's timeline() will find
-        //    warm data already waiting, so it shows the right mood immediately.
-        let freshGroups = await WidgetDataService.fetchGroups()
-        print("[Push] fetchGroups returned \(freshGroups.count) group(s)")
-        if !freshGroups.isEmpty, let data = try? JSONEncoder().encode(freshGroups) {
-            defaults?.set(data, forKey: "widget_groups")
-        }
-
-        // 3. Reload widget timelines — cache is now warm.
+        // 2. Reload widget timelines — the widget's timeline() will fetch fresh data.
         WidgetCenter.shared.reloadAllTimelines()
         print("[Push] Widget timelines reloaded")
+
+        // 3. Notify any live app UI to refresh its group list.
+        //    When the app is already in the foreground, scenePhase stays .active
+        //    and onChange never fires, so HomeView would otherwise show stale moods.
+        await MainActor.run {
+            NotificationCenter.default.post(name: .moodUpdateReceived, object: nil)
+        }
     }
 
     func application(_ app: UIApplication,

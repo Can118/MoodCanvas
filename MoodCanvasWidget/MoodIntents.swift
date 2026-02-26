@@ -74,38 +74,63 @@ struct SetMoodIntent: AppIntent {
 
         print("[Widget] SetMoodIntent: mood=\(moodRaw) groupId=\(groupId) userId=\(userId.prefix(8))…")
 
-        // Check that the widget JWT exists before attempting sync (gives early diagnostic)
         if defaults?.string(forKey: "widget_jwt") == nil {
             print("[Widget] SetMoodIntent: WARNING — widget_jwt is missing from AppGroup; open the main app")
         }
 
-        // Update the cached groups JSON so the widget immediately shows the new mood
+        // Stamp the current time as the mood timestamp so the widget shows it instantly
+        let nowISO = ISO8601DateFormatter().string(from: Date())
+
+        // ── Step 1: Update the cached groups immediately ──────────────────────
+        // The cache update happens BEFORE any network call so that when WidgetKit
+        // calls timeline() after perform() returns, the fast path finds fresh data
+        // and the local widget re-renders without waiting for Supabase.
         if let data = defaults?.data(forKey: "widget_groups"),
            var groups = try? JSONDecoder().decode([MoodGroup].self, from: data),
            let idx = groups.firstIndex(where: { $0.id == groupId }) {
             groups[idx].currentMoods[userId] = mood
+            groups[idx].moodTimestamps[userId] = nowISO
             if let updated = try? JSONEncoder().encode(groups) {
                 defaults?.set(updated, forKey: "widget_groups")
             }
         }
 
-        // Keep as a pending key — used as fallback if the network call below fails,
-        // and also consumed by processPendingWidgetMoods() when the app opens.
+        // ── Step 2: Write pending keys as a retry fallback ────────────────────
+        // If the Supabase sync below fails (network error, expired JWT, etc.),
+        // processPendingWidgetMoods() in the main app will retry on next open.
         defaults?.set(moodRaw, forKey: "widgetMood_\(groupId)")
+        defaults?.set(nowISO,  forKey: "widgetMoodTime_\(groupId)_\(userId)")
         defaults?.synchronize()
 
-        // Fire-and-forget: sync to Supabase in a detached task so perform() returns
-        // in < 1 ms. WidgetKit re-renders immediately from the already-updated cache.
-        // The detached task sends the APNs push to the partner and then triggers a
-        // second authoritative reload once Supabase confirms the write.
-        let capturedMood     = mood
-        let capturedUserId   = userId
-        let capturedGroupId  = groupId
-        Task.detached {
-            await WidgetDataService.syncMood(capturedMood, userId: capturedUserId, groupId: capturedGroupId)
-            WidgetCenter.shared.reloadAllTimelines()
+        // ── Step 3: Sync to Supabase INSIDE perform() ─────────────────────────
+        // Previously a Task.detached was used so perform() returned in < 1 ms.
+        // Problem: the widget extension process is terminated by iOS immediately
+        // after perform() returns — the detached task was killed before syncMood
+        // completed, so notifyMoodUpdate (and the APNs push to other devices)
+        // was never called. Cross-device widget updates silently broke.
+        //
+        // Awaiting here keeps the extension process alive for the duration of
+        // the network call. The cache update in Step 1 ensures timeline() uses
+        // the fast path and the local widget still renders quickly after return.
+        let synced = await WidgetDataService.syncMood(mood, userId: userId, groupId: groupId)
+
+        // ── Step 4: Clear pending keys on success ─────────────────────────────
+        // Once Supabase confirms the write, remove the pending keys so the next
+        // timeline() call takes the slow path (Supabase fetch) and picks up
+        // authoritative data — including other members' mood changes.
+        // If sync failed the pending keys remain so the fallback retry can fire.
+        if synced {
+            defaults?.removeObject(forKey: "widgetMood_\(groupId)")
+            defaults?.removeObject(forKey: "widgetMoodTime_\(groupId)_\(userId)")
+            defaults?.synchronize()
         }
-        print("[Widget] SetMoodIntent: done (background sync started)")
+
+        // ── Step 5: Reload timelines ──────────────────────────────────────────
+        // Synced → slow path fetches authoritative Supabase data.
+        // Failed → fast path re-applies the pending keys over the cached data.
+        WidgetCenter.shared.reloadAllTimelines()
+
+        print("[Widget] SetMoodIntent: \(synced ? "sync OK — push sent to other devices" : "sync FAILED — app will retry on next open")")
         return .result()
     }
 }

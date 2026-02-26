@@ -29,6 +29,8 @@ struct MoodWidgetEntryView: View {
 struct MediumWidgetView: View {
     let entry: MoodEntry
 
+    private let olive = Color(red: 0.40, green: 0.35, blue: 0.22)
+
     /// The mood the current user has set in this group, nil if none yet.
     private var selectedMood: Mood? {
         guard let userId = entry.currentUserId else { return nil }
@@ -36,77 +38,79 @@ struct MediumWidgetView: View {
     }
 
     var body: some View {
+        ZStack {
         VStack(alignment: .leading, spacing: 10) {
-            // Header
-            HStack {
-                Text(entry.group.name)
-                    .font(.headline.bold())
-                    .foregroundStyle(.white)
+                // Header
+                HStack {
+                    Text(entry.group.name)
+                        .font(.headline.bold())
+                        .foregroundStyle(olive)
+
+                    Spacer()
+
+                    // Message button for couples only — opens the partner's iMessage thread
+                    if entry.group.type == .couple, let url = partnerPhoneURL {
+                        Link(destination: url) {
+                            Image(systemName: "message.fill")
+                                .foregroundStyle(olive.opacity(0.9))
+                                .padding(6)
+                                .background(olive.opacity(0.1))
+                                .clipShape(Circle())
+                        }
+                    }
+                }
+
+                // Heart counter row — couple groups only
+                if entry.group.type == .couple {
+                    HStack(spacing: 8) {
+                        Text("❤️")
+                            .font(.subheadline)
+                        Text("\(entry.group.heartCount)")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(olive)
+                            .contentTransition(.numericText())
+                        Spacer()
+                        Button(intent: heartIntent) {
+                            Image(systemName: "heart.fill")
+                                .font(.caption.bold())
+                                .foregroundStyle(.pink)
+                                .padding(7)
+                                .background(.white.opacity(0.7))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
 
                 Spacer()
 
-                // Message button for couples only — opens the partner's iMessage thread
-                if entry.group.type == .couple, let url = partnerPhoneURL {
-                    Link(destination: url) {
-                        Image(systemName: "message.fill")
-                            .foregroundStyle(.white.opacity(0.9))
-                            .padding(6)
-                            .background(.white.opacity(0.2))
-                            .clipShape(Circle())
-                    }
-                }
-            }
-
-            // Heart counter row — couple groups only
-            if entry.group.type == .couple {
-                HStack(spacing: 8) {
-                    Text("❤️")
-                        .font(.subheadline)
-                    Text("\(entry.group.heartCount)")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.white)
-                        .contentTransition(.numericText())
-                    Spacer()
-                    Button(intent: heartIntent) {
-                        Image(systemName: "heart.fill")
-                            .font(.caption.bold())
-                            .foregroundStyle(.pink)
-                            .padding(7)
-                            .background(.white.opacity(0.9))
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-
-            Spacer()
-
-            // 5 mood buttons — the current user's active mood is visually highlighted
-            HStack(spacing: 6) {
-                ForEach(Mood.allCases) { mood in
-                    let isSelected = mood == selectedMood
-                    Button(intent: moodIntent(mood)) {
-                        VStack(spacing: 3) {
-                            Text(mood.emoji)
-                                .font(.title3)
-                            Text(mood.label)
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundStyle(.white)
+                // 5 mood buttons — the current user's active mood is visually highlighted
+                HStack(spacing: 6) {
+                    ForEach(Mood.allCases) { mood in
+                        let isSelected = mood == selectedMood
+                        Button(intent: moodIntent(mood)) {
+                            VStack(spacing: 3) {
+                                Text(mood.emoji)
+                                    .font(.title3)
+                                Text(mood.label)
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundStyle(olive)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(isSelected ? olive.opacity(0.15) : olive.opacity(0.07))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(olive.opacity(0.4), lineWidth: isSelected ? 1.5 : 0)
+                            )
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                        .background(isSelected ? .white.opacity(0.45) : .white.opacity(0.18))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(.white, lineWidth: isSelected ? 1.5 : 0)
-                        )
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
-            }
         }
         .padding(14)
+        }
     }
 
     /// `sms:` URL for the partner's phone — opens the existing iMessage thread on device.
@@ -140,7 +144,7 @@ struct BFFMediumWidgetView: View {
         return entry.group.currentMoods[userId]
     }
 
-    /// Members sorted so the current user appears first.
+    /// Members sorted so the current user appears first (up to 4).
     private var sortedMembers: [User] {
         var list = Array(entry.group.members.prefix(4))
         guard let userId = entry.currentUserId,
@@ -151,72 +155,162 @@ struct BFFMediumWidgetView: View {
         return list
     }
 
-    /// Olive/khaki colour from the Figma design.
-    private let olive = Color(red: 0.50, green: 0.47, blue: 0.35)
+    /// Olive/dark-brown colour from the Figma design.
+    private let olive = Color(red: 0.40, green: 0.35, blue: 0.22)
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-
-            // ── Left: member mood list ─────────────────────────────────────
-            VStack(alignment: .leading, spacing: 7) {
-                ForEach(Array(sortedMembers.enumerated()), id: \.element.id) { idx, member in
-                    HStack(spacing: 8) {
-                        if let mood = entry.group.currentMoods[member.id],
-                           let name = moodDisplayImageName(mood) {
-                            Image(name)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 34, height: 34)
-                        } else {
-                            Color.clear.frame(width: 34, height: 34)
-                        }
-                        Text(member.name)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(olive)
-                            .lineLimit(1)
-                    }
-                    // Thin divider separates the current user from friends
-                    if idx == 0 && sortedMembers.count > 1 {
-                        Rectangle()
-                            .fill(olive.opacity(0.25))
-                            .frame(height: 1)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // ── Right: "How are you feeling?" + 2×2 mood buttons ──────────
-            VStack(alignment: .center, spacing: 8) {
-                Image("how_are_you_feeling")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
-
-                // 2×2 grid matching Figma order: angry/sad top, tired/happy bottom
-                VStack(spacing: 6) {
-                    HStack(spacing: 6) {
-                        moodButtonView(.angry)
-                        moodButtonView(.sad)
-                    }
-                    HStack(spacing: 6) {
-                        moodButtonView(.tired)
-                        moodButtonView(.happy)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // Render the design background INSIDE the widget so iOS dark-mode
-        // adaptive rendering (which blacks out containerBackground images) is bypassed.
-        .background {
-            Image("widget_background")
+        ZStack {
+            // Face emoji — bottom center, fixed size
+            Image("face_emoji")
                 .resizable()
-                .scaledToFill()
-                .clipped()
+                .scaledToFit()
+                .frame(width: 110)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+
+            HStack(alignment: .top, spacing: 6) {
+
+                // ── Left: group name + member mood list ────────────────────────
+                VStack(alignment: .leading, spacing: 0) {
+                    // Group name in Instrument Serif Italic
+                    Text(entry.group.name)
+                        .font(.custom("InstrumentSerif-Italic", size: 14))
+                        .foregroundStyle(olive.opacity(0.75))
+                        .lineLimit(1)
+                        .padding(.bottom, 6)
+
+                    ForEach(Array(sortedMembers.enumerated()), id: \.element.id) { idx, member in
+                        let isMe = member.id == entry.currentUserId
+                        let displayName = isMe ? "You" : member.name
+                        let mood = entry.group.currentMoods[member.id]
+
+                        HStack(spacing: 6) {
+                            if let mood, let imgName = moodDisplayImageName(mood) {
+                                Image(imgName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 54, height: 54)
+                                    .offset(x: -8)
+                            } else {
+                                Color.clear.frame(width: 54, height: 54)
+                                    .offset(x: -8)
+                            }
+
+                            memberLabel(name: displayName, userId: member.id)
+                        }
+                        .padding(.vertical, 2)
+
+                        // Short divider separates the current user from friends
+                        if idx == 0 && sortedMembers.count > 1 {
+                            Image("line")
+                                .resizable()
+                                .frame(width: 90, height: 2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 2)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+                // Fixed width so the right column always gets enough room for buttons
+                .frame(width: 148, alignment: .leading)
+                .padding(.top, 8)
+
+                // ── Right: "How are you feeling?" + 2×2 mood buttons ──────────
+                // Buttons are 68×68pt: grid = (68+3+68) × (68+3+68) = 139×139pt
+                // Total right column height: ~20 heading + 6 spacing + 139 = 165pt < 169pt ✓
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("How are you feeling?")
+                        .padding(.top, 6)
+                        .font(.system(size: 22, weight: .medium))
+                        .fontDesign(.rounded)
+                        .foregroundStyle(olive)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                        .kerning(-0.5)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+
+                    // 2×2 grid — compact fixed-size buttons, hugging the right edge
+                    VStack(spacing: 0) {
+                        HStack(spacing: 3) {
+                            moodButtonView(.angry)
+                            moodButtonView(.sad)
+                        }
+                        HStack(spacing: 3) {
+                            moodButtonView(.tired)
+                            moodButtonView(.happy)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+            .padding(.leading, 0)
+            .padding(.trailing, 4)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Name + optional "· HH:MM AM" timestamp label in EB Garamond Medium.
+    @ViewBuilder
+    private func memberLabel(name: String, userId: String) -> some View {
+        if let timeStr = formattedTime(userId: userId) {
+            (Text(name)
+             + Text("  ·  \(timeStr)").foregroundStyle(olive.opacity(0.65)))
+                .font(.custom("EB Garamond", size: 15).weight(.medium))
+                .foregroundStyle(olive)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+        } else {
+            Text(name)
+                .font(.custom("EB Garamond", size: 15).weight(.medium))
+                .foregroundStyle(olive)
+                .lineLimit(1)
+        }
+    }
+
+    /// Parses the ISO-8601 timestamp stored in moodTimestamps and returns a
+    /// locale-appropriate short time string (e.g. "7:33 AM").
+    private func formattedTime(userId: String) -> String? {
+        guard let iso = entry.group.moodTimestamps[userId] else { return nil }
+        guard let date = parseTimestamp(iso) else { return nil }
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.dateFormat = "h:mm a"
+        return fmt.string(from: date)
+    }
+
+    /// Robust ISO-8601 timestamp parser that handles:
+    /// - PostgreSQL microseconds: "2026-02-25T20:33:33.123456+00:00"
+    /// - ISO8601DateFormatter quirks with +00:00 timezone and fractional seconds
+    private func parseTimestamp(_ iso: String) -> Date? {
+        // Normalize: truncate microseconds (6 digits) to milliseconds (3 digits)
+        // so ISO8601DateFormatter can parse the fractional part correctly.
+        let s = iso.replacingOccurrences(
+            of: #"(\.\d{3})\d+"#,
+            with: "$1",
+            options: .regularExpression
+        )
+        // Attempt 1: ISO8601DateFormatter with fractional seconds
+        let p = ISO8601DateFormatter()
+        p.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = p.date(from: s) { return d }
+
+        // Attempt 2: ISO8601DateFormatter without fractional seconds
+        p.formatOptions = [.withInternetDateTime]
+        if let d = p.date(from: s) { return d }
+
+        // Attempt 3: DateFormatter with XXX timezone specifier.
+        // DateFormatter handles "+00:00" via XXX reliably, unlike ISO8601DateFormatter
+        // which has known edge cases combining +HH:MM offset with fractional seconds.
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+        if let d = df.date(from: s) { return d }
+        df.dateFormat = "yyyy-MM-dd'T'HH:mm:ssXXX"
+        return df.date(from: s)
     }
 
     @ViewBuilder
@@ -225,11 +319,7 @@ struct BFFMediumWidgetView: View {
             Image(moodButtonImageName(mood))
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(olive, lineWidth: mood == selectedMood ? 2.5 : 0)
-                )
+                .frame(width: 62, height: 62)
         }
         .buttonStyle(.plain)
     }
@@ -238,21 +328,21 @@ struct BFFMediumWidgetView: View {
 
     private func moodDisplayImageName(_ mood: Mood) -> String? {
         switch mood {
-        case .happy: return "happy_mood"
-        case .sad:   return "sad_mood"
-        case .tired: return "tired_mood"
-        case .angry: return "angry_mood"
-        default:     return nil
+        case .happy:  return "mood_mochi_v2_very_happy 30"
+        case .sad:    return "mood_mochi_v2_sad 23"
+        case .angry:  return "mood_mochi_v2_angry 25"
+        case .tired:  return "mood_mochi_v2_neutral 21"
+        default:      return nil
         }
     }
 
     private func moodButtonImageName(_ mood: Mood) -> String {
         switch mood {
-        case .happy: return "happy_mood_button"
-        case .sad:   return "sad_mood_button"
-        case .tired: return "tired_mood_button"
-        case .angry: return "angry_mood_button"
-        default:     return "happy_mood_button"
+        case .happy:  return "Group 43"
+        case .sad:    return "Group 42"
+        case .angry:  return "Group 41"
+        case .tired:  return "Group 44"
+        default:      return "Group 43"
         }
     }
 

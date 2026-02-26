@@ -55,10 +55,15 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
             var groups = cachedBeforeFetch
             if let userId = currentUserId {
                 for idx in groups.indices {
-                    let key = "widgetMood_\(groups[idx].id)"
-                    if let moodRaw = defaults?.string(forKey: key),
+                    let moodKey = "widgetMood_\(groups[idx].id)"
+                    if let moodRaw = defaults?.string(forKey: moodKey),
                        let mood    = Mood(rawValue: moodRaw) {
                         groups[idx].currentMoods[userId] = mood
+                    }
+                    // Re-apply pending timestamp so it shows immediately on widget tap
+                    let timeKey = "widgetMoodTime_\(groups[idx].id)_\(userId)"
+                    if let ts = defaults?.string(forKey: timeKey) {
+                        groups[idx].moodTimestamps[userId] = ts
                     }
                 }
             }
@@ -90,10 +95,15 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
         if !freshGroups.isEmpty,
            let userId = defaults?.string(forKey: "widget_current_user_id") {
             for idx in freshGroups.indices {
-                let key = "widgetMood_\(freshGroups[idx].id)"
-                if let moodRaw = defaults?.string(forKey: key),
+                let moodKey = "widgetMood_\(freshGroups[idx].id)"
+                if let moodRaw = defaults?.string(forKey: moodKey),
                    let mood = Mood(rawValue: moodRaw) {
                     freshGroups[idx].currentMoods[userId] = mood
+                }
+                // Re-apply pending timestamp to prevent Supabase stale fetch from reverting it
+                let timeKey = "widgetMoodTime_\(freshGroups[idx].id)_\(userId)"
+                if let ts = defaults?.string(forKey: timeKey) {
+                    freshGroups[idx].moodTimestamps[userId] = ts
                 }
             }
         }
@@ -134,11 +144,15 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
         let group = pick(from: allGroups, selectedId: configuration.group?.id) ?? .preview
         let entry = MoodEntry(date: .now, group: group, configuration: configuration, currentUserId: currentUserId)
 
-        // Request a refresh every 2 minutes as a fallback safety net.
-        // The primary update path is via silent APNs push (near-instant),
-        // but this ensures stale data is corrected quickly even if a push
-        // is delayed or dropped by the OS.
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 2, to: .now) ?? .now
+        // Request a refresh as a fallback safety net.
+        // The primary update path is via silent APNs push (near-instant).
+        // Simulator can't receive APNs pushes so it must rely on polling;
+        // use 30-second intervals there. On real devices 2 minutes is enough.
+        #if targetEnvironment(simulator)
+        let nextUpdate = Calendar.current.date(byAdding: .second, value: 30, to: .now) ?? .now
+        #else
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 1, to: .now) ?? .now
+        #endif
         return Timeline(entries: [entry], policy: .after(nextUpdate))
     }
 
@@ -160,6 +174,25 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
     }
 }
 
+// MARK: - Container Background (family-aware)
+
+/// Medium widgets (4×2) use the group-specific background image rendered via containerBackground.
+/// iOS dark-mode adaptive tinting. containerBackground gets plain cream to match.
+/// Large widgets keep their group-type gradient in containerBackground.
+private struct WidgetContainerBackground: View {
+    @Environment(\.widgetFamily) var family
+    let entry: MoodEntry
+
+    var body: some View {
+        switch family {
+        case .systemLarge:
+            entry.group.type.backgroundGradient
+        default:
+            Color(red: 1.0, green: 0.988, blue: 0.929) // #FFFCED
+        }
+    }
+}
+
 // MARK: - Widget Definition
 
 struct MoodCanvasWidget: Widget {
@@ -173,17 +206,7 @@ struct MoodCanvasWidget: Widget {
         ) { entry in
             MoodWidgetEntryView(entry: entry)
                 .containerBackground(for: .widget) {
-                    // BFF uses a custom image background rendered INSIDE the widget view
-                    // (in BFFMediumWidgetView) to avoid iOS dark-mode adaptive treatment.
-                    // Other group types use their gradient here.
-                    if entry.group.type == .bff {
-                        // BFF uses a custom image background rendered INSIDE the
-                        // widget view to avoid iOS dark-mode adaptive treatment.
-                        // This plain cream colour matches the image fill colour.
-                        Color(red: 0.99, green: 0.98, blue: 0.95)
-                    } else {
-                        entry.group.type.backgroundGradient
-                    }
+                    WidgetContainerBackground(entry: entry)
                 }
         }
         .configurationDisplayName("Mood Canvas")

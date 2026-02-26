@@ -37,7 +37,7 @@ create table if not exists public.group_members (
 create table if not exists public.moods (
   user_id    text references public.users(id) on delete cascade,
   group_id   uuid references public.groups(id) on delete cascade,
-  mood       text not null check (mood in ('happy','sad','excited','chill','tired')),
+  mood       text not null check (mood in ('happy','sad','excited','chill','tired','angry')),
   updated_at timestamptz default now(),
   primary key (user_id, group_id)
 );
@@ -236,6 +236,97 @@ CREATE POLICY "device_tokens_insert" ON public.device_tokens
 
 CREATE POLICY "device_tokens_update" ON public.device_tokens
   FOR UPDATE USING (user_id = auth_uid()) WITH CHECK (user_id = auth_uid());
+
+-- ── Moods updated_at trigger ─────────────────────────────────
+
+-- Automatically refresh moods.updated_at on every UPDATE.
+-- The column DEFAULT now() only fires on INSERT; without this trigger
+-- the timestamp stays frozen at the original insert time forever.
+CREATE OR REPLACE FUNCTION public.set_moods_updated_at()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER moods_updated_at
+BEFORE UPDATE ON public.moods
+FOR EACH ROW EXECUTE FUNCTION public.set_moods_updated_at();
+
+-- ── Widget Data ──────────────────────────────────────────────
+
+-- Returns all groups for the current user with members, currentMoods,
+-- and moodTimestamps (ISO-8601 strings from moods.updated_at).
+CREATE OR REPLACE FUNCTION public.get_widget_data()
+RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER AS $function$
+  SELECT COALESCE(jsonb_agg(
+    jsonb_build_object(
+      'id',        g.id::text,
+      'name',      g.name,
+      'type',      g.type,
+      'createdBy', g.created_by,
+      'members', COALESCE((
+        SELECT jsonb_agg(jsonb_build_object(
+          'id',          u.id,
+          'name',        COALESCE(u.name, 'Unknown'),
+          'phoneNumber', ''
+        ))
+        FROM group_members gm2
+        JOIN users u ON u.id = gm2.user_id
+        WHERE gm2.group_id = g.id
+      ), '[]'::jsonb),
+      'currentMoods', COALESCE((
+        SELECT jsonb_object_agg(m.user_id, m.mood)
+        FROM moods m
+        WHERE m.group_id = g.id
+      ), '{}'::jsonb),
+      'moodTimestamps', COALESCE((
+        SELECT jsonb_object_agg(m.user_id, to_jsonb(m.updated_at))
+        FROM moods m
+        WHERE m.group_id = g.id
+      ), '{}'::jsonb)
+    )
+  ), '[]'::jsonb)
+  FROM groups g
+  WHERE g.id IN (
+    SELECT gm.group_id FROM group_members gm WHERE gm.user_id = auth_uid()
+  )
+$function$;
+
+-- ── Couple Hearts ────────────────────────────────────────────
+
+-- Cumulative heart count per couple group (hearts never decrement)
+CREATE TABLE IF NOT EXISTS public.couple_hearts (
+  group_id   UUID PRIMARY KEY REFERENCES public.groups(id) ON DELETE CASCADE,
+  count      INTEGER NOT NULL DEFAULT 0
+);
+
+ALTER TABLE public.couple_hearts ENABLE ROW LEVEL SECURITY;
+
+-- Members of the couple group can read and write the heart count
+CREATE POLICY "couple_hearts_select" ON public.couple_hearts
+  FOR SELECT USING (
+    group_id IN (SELECT group_id FROM public.group_members WHERE user_id = auth_uid())
+  );
+
+-- Increments are handled exclusively through the increment_heart RPC (SECURITY DEFINER)
+-- so no direct INSERT/UPDATE policies are needed for clients.
+
+-- Atomically creates the row on first heart, then increments; returns new count.
+CREATE OR REPLACE FUNCTION public.increment_heart(p_group_id uuid)
+RETURNS integer LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_count integer;
+BEGIN
+  INSERT INTO public.couple_hearts (group_id, count)
+  VALUES (p_group_id, 1)
+  ON CONFLICT (group_id) DO UPDATE
+    SET count = couple_hearts.count + 1
+  RETURNING count INTO v_count;
+  RETURN v_count;
+END;
+$$;
 
 -- ── Search ───────────────────────────────────────────────────
 

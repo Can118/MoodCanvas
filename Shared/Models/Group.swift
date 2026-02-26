@@ -55,6 +55,9 @@ struct MoodGroup: Identifiable, Codable, Hashable {
     var createdBy: String
     var members: [User]
     var currentMoods: [String: Mood]  // userId → Mood
+    /// ISO-8601 strings from Supabase moods.updated_at, keyed by userId.
+    /// Decoded safely — empty if the RPC doesn't return this field yet.
+    var moodTimestamps: [String: String]
     /// Cumulative heart count — couple groups only. Defaults to 0 so existing
     /// cached JSON (which lacks this key) decodes cleanly.
     var heartCount: Int
@@ -66,6 +69,7 @@ struct MoodGroup: Identifiable, Codable, Hashable {
         createdBy: String = "",
         members: [User] = [],
         currentMoods: [String: Mood] = [:],
+        moodTimestamps: [String: String] = [:],
         heartCount: Int = 0
     ) {
         self.id = id
@@ -74,24 +78,26 @@ struct MoodGroup: Identifiable, Codable, Hashable {
         self.createdBy = createdBy
         self.members = members
         self.currentMoods = currentMoods
+        self.moodTimestamps = moodTimestamps
         self.heartCount = heartCount
     }
 
     // Custom decoder so that JSON lacking "heartCount" (e.g. cached widget data
     // written before this feature was added) decodes to 0 instead of throwing.
     enum CodingKeys: String, CodingKey {
-        case id, name, type, createdBy, members, currentMoods, heartCount
+        case id, name, type, createdBy, members, currentMoods, moodTimestamps, heartCount
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        id           = try c.decode(String.self,          forKey: .id)
-        name         = try c.decode(String.self,          forKey: .name)
-        type         = try c.decode(GroupType.self,       forKey: .type)
-        createdBy    = try c.decode(String.self,          forKey: .createdBy)
-        members      = try c.decode([User].self,          forKey: .members)
-        currentMoods = try c.decode([String: Mood].self,  forKey: .currentMoods)
-        heartCount   = try c.decodeIfPresent(Int.self,    forKey: .heartCount) ?? 0
+        id             = try c.decode(String.self,                   forKey: .id)
+        name           = try c.decode(String.self,                   forKey: .name)
+        type           = try c.decode(GroupType.self,                forKey: .type)
+        createdBy      = try c.decode(String.self,                   forKey: .createdBy)
+        members        = try c.decode([User].self,                   forKey: .members)
+        currentMoods   = try c.decode([String: Mood].self,           forKey: .currentMoods)
+        moodTimestamps = try c.decodeIfPresent([String: String].self, forKey: .moodTimestamps) ?? [:]
+        heartCount     = try c.decodeIfPresent(Int.self,             forKey: .heartCount) ?? 0
     }
 }
 
@@ -99,16 +105,29 @@ struct MoodGroup: Identifiable, Codable, Hashable {
 
 extension MoodGroup {
     static var preview: MoodGroup {
-        MoodGroup(
+        let now = Date()
+        let cal = Calendar.current
+        func iso(_ h: Int, _ m: Int) -> String {
+            let d = cal.date(bySettingHour: h, minute: m, second: 0, of: now) ?? now
+            return ISO8601DateFormatter().string(from: d)
+        }
+        return MoodGroup(
             id: "preview",
             name: "Squad",
             type: .bff,
             members: [
-                User(id: "1", name: "Alex", phoneNumber: "+11234567890"),
-                User(id: "2", name: "Jordan", phoneNumber: "+10987654321"),
-                User(id: "3", name: "Sam", phoneNumber: "+11112223333"),
+                User(id: "1", name: "Alex",   phoneNumber: "+11234567890"),
+                User(id: "2", name: "Aaron",  phoneNumber: "+10987654321"),
+                User(id: "3", name: "Sarah",  phoneNumber: "+11112223333"),
+                User(id: "4", name: "Jessica", phoneNumber: "+12223334444"),
             ],
-            currentMoods: ["1": .happy, "2": .chill, "3": .excited]
+            currentMoods: ["1": .happy, "2": .angry, "3": .sad, "4": .tired],
+            moodTimestamps: [
+                "1": iso(7, 33),
+                "2": iso(13, 59),
+                "3": iso(0, 2),
+                "4": iso(16, 42),
+            ]
         )
     }
 

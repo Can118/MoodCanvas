@@ -154,6 +154,21 @@ serve(async (req: Request) => {
         } else {
           const body = await res.text();
           console.error(`APNs rejected token (${res.status}): ${body}`);
+          // 410 = Unregistered (app uninstalled or APNs token rotated)
+          // 400 + BadDeviceToken = malformed token
+          // In both cases, remove the stale row so future sends don't
+          // keep hitting a dead token until the user reopens the app.
+          if (res.status === 410 || (res.status === 400 && body.includes("BadDeviceToken"))) {
+            const { error: deleteErr } = await supabase
+              .from("device_tokens")
+              .delete()
+              .eq("token", token);
+            if (deleteErr) {
+              console.error(`Failed to remove stale token: ${deleteErr.message}`);
+            } else {
+              console.log(`Removed stale APNs token from database`);
+            }
+          }
         }
       } catch (e) {
         console.error("APNs fetch failed:", (e as Error).message);

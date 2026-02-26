@@ -120,20 +120,28 @@ class GroupService: ObservableObject {
         guard let index = groups.firstIndex(where: { $0.id == groupId }) else { return }
         groups[index].currentMoods[userId] = mood
 
+        // Stamp an optimistic timestamp so writeGroupsToSharedContainer()
+        // writes a non-empty moodTimestamps to the widget cache, making the
+        // BFF widget show the time immediately without waiting for a Supabase round-trip.
+        let nowISO = ISO8601DateFormatter().string(from: Date())
+        groups[index].moodTimestamps[userId] = nowISO
+
         // Write full groups snapshot to App Group so widget shows live data.
-        // Also set the pending widgetMood key so the widget's timeline() re-applies
-        // the correct mood even if fetchGroups() returns stale Supabase data
-        // (the write below is in-flight when timeline() is called).
+        // Also set the pending widgetMood/widgetMoodTime keys so the widget's
+        // timeline() re-applies the correct mood + timestamp even if fetchGroups()
+        // returns stale Supabase data (the write below is in-flight when timeline() is called).
         let sharedDefaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
         sharedDefaults?.set(mood.rawValue, forKey: "widgetMood_\(groupId)")
+        sharedDefaults?.set(nowISO,        forKey: "widgetMoodTime_\(groupId)_\(userId)")
         writeGroupsToSharedContainer()
         WidgetCenter.shared.reloadAllTimelines()
 
         do {
             try await SupabaseService.shared.updateMood(mood, userId: userId, groupId: groupId)
-            // Supabase write is confirmed — clear the pending key so processPendingWidgetMoods()
+            // Supabase write is confirmed — clear pending keys so processPendingWidgetMoods()
             // doesn't treat this as an un-synced widget tap and fire a duplicate push.
             sharedDefaults?.removeObject(forKey: "widgetMood_\(groupId)")
+            sharedDefaults?.removeObject(forKey: "widgetMoodTime_\(groupId)_\(userId)")
             // Sync the freshest Supabase JWT from Keychain into the App Group so that
             // the notifyMoodUpdate call below always has a valid token (the AppGroup
             // copy can go stale after the 1-hour JWT TTL).
@@ -189,10 +197,14 @@ class GroupService: ObservableObject {
         guard let userId = currentUserId else { return }
         let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
         for group in groups {
-            let key = "widgetMood_\(group.id)"
-            guard let moodRaw = defaults?.string(forKey: key),
+            let moodKey = "widgetMood_\(group.id)"
+            guard let moodRaw = defaults?.string(forKey: moodKey),
                   let mood = Mood(rawValue: moodRaw) else { continue }
-            defaults?.removeObject(forKey: key)
+            // Clear both mood and timestamp keys — leaving the timestamp key behind
+            // would cause timeline()'s slow path to re-apply a stale optimistic
+            // timestamp on top of the authoritative Supabase data.
+            defaults?.removeObject(forKey: moodKey)
+            defaults?.removeObject(forKey: "widgetMoodTime_\(group.id)_\(userId)")
             await updateMood(mood, for: userId, in: group.id)
         }
     }
