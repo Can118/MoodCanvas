@@ -3,48 +3,69 @@ import SwiftUI
 struct WelcomeView: View {
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                Spacer()
+            ZStack {
+                Color(hex: "FFFCED").ignoresSafeArea()
 
-                // Logo
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(colors: [.purple, .pink],
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing)
-                        )
-                        .frame(width: 120, height: 120)
-                    Text("😊")
-                        .font(.system(size: 60))
-                }
-                .padding(.bottom, 32)
+                VStack(spacing: 0) {
+                    Spacer().frame(height: 36)
 
-                VStack(spacing: 12) {
-                    Text("MoodCanvas")
-                        .font(.largeTitle.bold())
-
-                    Text("Share how you're feeling\nwith the people that matter most.")
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
+                    // Phone illustration
+                    Image("onboarding_iphone_2")
+                        .resizable()
+                        .scaledToFit()
                         .padding(.horizontal, 40)
-                }
 
-                Spacer()
+                    Spacer().frame(height: 40)
 
-                NavigationLink(destination: PhoneNumberView()) {
-                    Text("Let's Go")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.blue)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    // Tagline
+                    Text("Live moods of your friends &\ncouples on your home screen")
+                        .font(Font.custom("EBGaramond-Medium", size: 26))
+                        .foregroundStyle(Color(hex: "493504"))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 36)
+
+                    Spacer().frame(height: 36)
+
+                    // Let's Go button
+                    NavigationLink {
+                        PhoneNumberView()
+                    } label: {
+                        letsGoLabel
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 48)
+
+                    Spacer().frame(height: 48)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 52)
             }
+            .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    // MARK: - Let's Go button
+
+    private var letsGoLabel: some View {
+        ZStack {
+            Text("Let's Go")
+                .font(.system(size: 17, weight: .black, design: .rounded))
+                .frame(maxWidth: .infinity, alignment: .center)
+            HStack {
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 15, weight: .black))
+                    .padding(.trailing, 26)
+            }
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+        .background {
+            Capsule()
+                .fill(Color(hex: "B8721C"))
+                .overlay {
+                    Capsule()
+                        .strokeBorder(Color(hex: "3C392A").opacity(0.4), lineWidth: 5)
+                }
         }
     }
 }

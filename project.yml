@@ -22,6 +22,24 @@ packages:
     url: https://github.com/supabase/supabase-swift
     from: "2.5.0"
 
+schemes:
+  MoodCanvas:
+    build:
+      targets:
+        MoodCanvas: all
+        MoodCanvasWidget: all
+        MoodCanvasiMessage: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
 targets:
 
   # ─────────────────────────────────────────
@@ -52,6 +70,7 @@ targets:
         product: FirebaseAuth
       - package: SupabaseSwift
         product: Supabase
+      - sdk: MessageUI.framework
 
   # ─────────────────────────────────────────
   # MARK: Widget Extension

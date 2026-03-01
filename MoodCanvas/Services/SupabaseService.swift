@@ -155,6 +155,25 @@ final class SupabaseService {
 
     // MARK: - Groups
 
+    func leaveGroup(userId: String, groupId: String) async throws {
+        try await client
+            .from("group_members")
+            .delete()
+            .eq("user_id", value: userId)
+            .eq("group_id", value: groupId)
+            .execute()
+    }
+
+    func renameGroup(id: String, name: String) async throws {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        try await client
+            .from("groups")
+            .update(["name": trimmed])
+            .eq("id", value: id)
+            .execute()
+    }
+
     func createGroup(_ group: MoodGroup, createdBy userId: String) async throws {
         // Validate before touching the network
         guard !group.name.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -303,12 +322,17 @@ final class SupabaseService {
 
         return invitations.compactMap { inv in
             guard let group = groupMap[inv.groupId] else { return nil }
+            // Prefer the name saved in the recipient's device contacts over the in-app name
+            let resolvedName = ContactsService.contactDisplayName(forUserId: inv.invitedBy)
+                ?? inviterMap[inv.invitedBy]
+                ?? "Unknown"
             return GroupInvitationDetail(
                 id: inv.id,
                 groupId: inv.groupId,
                 groupName: group.name,
                 groupType: GroupType(rawValue: group.type) ?? .bff,
-                inviterName: inviterMap[inv.invitedBy] ?? "Unknown"
+                inviterName: resolvedName,
+                inviterId: inv.invitedBy
             )
         }
     }

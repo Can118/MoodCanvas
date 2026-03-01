@@ -38,24 +38,27 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         // Forward to Firebase (needed for phone number verification)
         Auth.auth().setAPNSToken(deviceToken, type: .unknown)
-        // Save the hex token so GroupService can register it with Supabase after login
         let tokenHex = deviceToken.map { String(format: "%02x", $0) }.joined()
-        print("[APNs] Registration succeeded — token: \(tokenHex.prefix(16))…")
+        let prevToken = UserDefaults.standard.string(forKey: "apns_device_token")
+        let tokenRotated = prevToken != nil && prevToken != tokenHex
+        print("[APNs] Registration succeeded — token: \(tokenHex.prefix(16))… (rotated=\(tokenRotated))")
+        // Always update UserDefaults so fetchGroups() always has the latest token.
         UserDefaults.standard.set(tokenHex, forKey: "apns_device_token")
-        // Eagerly persist to Supabase only if the JWT is already configured.
-        // If Supabase isn't authenticated yet (session restoration still in-flight),
-        // skip — AuthService.saveDeviceTokenIfAvailable() will save after configure(jwt:).
-        if let userId = Auth.auth().currentUser?.uid {
-            Task { @MainActor in
-                if SupabaseService.shared.hasJWT {
-                    print("[APNs] JWT ready — saving token to Supabase immediately")
-                    await SupabaseService.shared.saveDeviceToken(tokenHex, userId: userId)
-                } else {
-                    print("[APNs] JWT not ready yet — token in UserDefaults, AuthService will save after session restore")
-                }
-            }
-        } else {
+
+        // Always attempt to save to Supabase immediately — do not guard on hasJWT.
+        // Rationale: if we skip the save here (because session restore hasn't finished yet),
+        // fetchGroups() may run before this callback fires and store the OLD token.
+        // The new token would sit in UserDefaults but never reach Supabase, causing the
+        // "stale token → 410 → token deleted → no pushes" cycle.
+        // saveDeviceToken() handles a missing JWT gracefully (logs the error, doesn't crash).
+        // fetchGroups() will also save on the next app-open as a second safety net.
+        guard let userId = Auth.auth().currentUser?.uid else {
             print("[APNs] No user yet — token stored in UserDefaults, will be saved on next fetchGroups()")
+            return
+        }
+        Task { @MainActor in
+            print("[APNs] Saving token to Supabase (hasJWT=\(SupabaseService.shared.hasJWT))")
+            await SupabaseService.shared.saveDeviceToken(tokenHex, userId: userId)
         }
     }
 

@@ -8,10 +8,15 @@ struct CreateGroupView: View {
     @StateObject private var contactsService = ContactsService()
 
     @State private var groupName = ""
-    @State private var selectedType: GroupType = .bff
+    @State private var selectedType: GroupType
     @State private var selectedMembers: [User] = []
     @State private var isCreating = false
     @State private var searchQuery = ""
+
+    init(initialType: GroupType = .bff, initialName: String = "") {
+        _selectedType = State(initialValue: initialType)
+        _groupName    = State(initialValue: initialName)
+    }
 
     private var isValid: Bool {
         !groupName.trimmingCharacters(in: .whitespaces).isEmpty

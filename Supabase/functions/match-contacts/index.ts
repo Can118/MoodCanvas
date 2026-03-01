@@ -140,6 +140,12 @@ serve(async (req: Request) => {
 
   const hashes = await Promise.all(phoneNumbers.map((n) => hmacSha256(n, hashSecret)));
 
+  // Build reverse map: hash → original phone (so we can echo the phone back to the client)
+  const hashToPhone: Record<string, string> = {};
+  for (let i = 0; i < phoneNumbers.length; i++) {
+    hashToPhone[hashes[i]] = phoneNumbers[i];
+  }
+
   // 6. Query with service role (to see all phone hashes), then filter
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -149,7 +155,7 @@ serve(async (req: Request) => {
 
   const { data, error } = await supabase
     .from("users")
-    .select("id, name")
+    .select("id, name, phone_hash")
     .in("phone_hash", hashes)
     .neq("id", uid); // never return the requesting user
 
@@ -158,5 +164,12 @@ serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: JSON_HEADERS });
   }
 
-  return new Response(JSON.stringify({ matches: data ?? [] }), { headers: JSON_HEADERS });
+  // Include the original phone so the client can resolve contact names locally
+  const matches = (data ?? []).map((u: { id: string; name: string | null; phone_hash: string }) => ({
+    id: u.id,
+    name: u.name,
+    phone: hashToPhone[u.phone_hash] ?? null,
+  }));
+
+  return new Response(JSON.stringify({ matches }), { headers: JSON_HEADERS });
 });

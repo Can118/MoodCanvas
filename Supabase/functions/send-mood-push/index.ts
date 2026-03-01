@@ -151,22 +151,28 @@ serve(async (req: Request) => {
 
         if (res.ok) {
           sent++;
+          console.log(`APNs accepted token (sent=${sent})`);
         } else {
           const body = await res.text();
           console.error(`APNs rejected token (${res.status}): ${body}`);
-          // 410 = Unregistered (app uninstalled or APNs token rotated)
-          // 400 + BadDeviceToken = malformed token
-          // In both cases, remove the stale row so future sends don't
-          // keep hitting a dead token until the user reopens the app.
-          if (res.status === 410 || (res.status === 400 && body.includes("BadDeviceToken"))) {
+          // 410 = Unregistered: app was uninstalled. Safe to remove — the token
+          // is permanently dead and the user would re-register on reinstall.
+          //
+          // 400 BadDeviceToken is intentionally NOT deleted here. It can mean:
+          //   a) APNS_ENVIRONMENT secret is wrong (sandbox vs production mismatch)
+          //   b) The token is from a very recent rotation that APNs hasn't propagated yet
+          // In both cases, deleting the token permanently breaks push notifications until
+          // the user reopens the app. Leaving it means we try once per push cycle, which
+          // is acceptable. Fix the APNS_ENVIRONMENT secret to resolve case (a).
+          if (res.status === 410) {
             const { error: deleteErr } = await supabase
               .from("device_tokens")
               .delete()
               .eq("token", token);
             if (deleteErr) {
-              console.error(`Failed to remove stale token: ${deleteErr.message}`);
+              console.error(`Failed to remove unregistered token: ${deleteErr.message}`);
             } else {
-              console.log(`Removed stale APNs token from database`);
+              console.log(`Removed unregistered APNs token (410) from database`);
             }
           }
         }

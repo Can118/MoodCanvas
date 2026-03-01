@@ -2,219 +2,204 @@ import SwiftUI
 
 struct GroupDetailView: View {
     let group: MoodGroup
+
     @EnvironmentObject var groupService: GroupService
     @EnvironmentObject var authService: AuthService
+    @Environment(\.dismiss) private var dismiss
 
-    @State private var showAddMembers = false
+    @State private var showAddMembers    = false
+    @State private var showSettings      = false
+    @State private var showWidgetTutorial = false
 
-    // Always read the freshest version from GroupService so the view
-    // updates automatically when members are added or moods change.
+    // Always read fresh data from GroupService
     private var liveGroup: MoodGroup {
         groupService.groups.first { $0.id == group.id } ?? group
     }
 
-    private var heartCount: Int {
-        groupService.heartCounts[liveGroup.id] ?? liveGroup.heartCount
+    private var currentUserId: String { authService.currentUser?.id ?? "" }
+
+    private var otherMembers: [User] {
+        liveGroup.members.filter { $0.id != currentUserId }
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Mood canvas card
-                MoodCanvasCard(group: liveGroup)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
+        ZStack(alignment: .bottom) {
+            Color(hex: "FFFCED").ignoresSafeArea()
 
-                // Heart counter — couple groups only
-                if liveGroup.type == .couple {
-                    CoupleHeartSection(count: heartCount) {
-                        Task { await groupService.sendHeart(groupId: liveGroup.id) }
+            // Scrollable content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+
+                    // Space for floating top buttons
+                    Color.clear.frame(height: 72)
+
+                    // Group name
+                    Text(liveGroup.name)
+                        .font(Font.custom("EBGaramond-Bold", size: 34))
+                        .foregroundStyle(Color(hex: "3C392A"))
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
+
+                    // Current user's big mood
+                    let myMood = liveGroup.currentMoods[currentUserId] ?? .happy
+                    Image(myMood.displayImageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 116, height: 116)
+                        .frame(maxWidth: .infinity)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: myMood)
+                        .padding(.bottom, 20)
+
+                    // Divider
+                    Divider()
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 8)
+
+                    // Other members' moods
+                    ForEach(otherMembers) { member in
+                        memberRow(member)
                     }
-                    .padding(.horizontal)
-                }
 
-                // Member mood list
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Members")
-                            .font(.headline)
-                        Spacer()
-                        if liveGroup.createdBy == authService.currentUser?.id {
-                            Button {
-                                showAddMembers = true
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(.subheadline.bold())
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    ForEach(liveGroup.members) { member in
-                        MemberMoodRow(
-                            member: member,
-                            mood: liveGroup.currentMoods[member.id]
-                        )
-                        .padding(.horizontal)
-
-                        if member.id != liveGroup.members.last?.id {
-                            Divider().padding(.leading)
-                        }
-                    }
-                }
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
-
-                // Pick your mood
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Your Mood")
-                        .font(.headline)
-                        .padding(.horizontal)
-
-                    HStack(spacing: 10) {
-                        ForEach(Mood.allCases) { mood in
-                            Button {
-                                Task {
-                                    if let userId = authService.currentUser?.id {
-                                        await groupService.updateMood(mood, for: userId, in: liveGroup.id)
-                                    }
-                                }
-                            } label: {
-                                VStack(spacing: 6) {
-                                    Text(mood.emoji)
-                                        .font(.title2)
-                                    Text(mood.label)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(Color(.secondarySystemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.horizontal)
+                    // Padding so last row isn't hidden by bottom mood bar
+                    Color.clear.frame(height: 110)
                 }
             }
-            .padding(.bottom, 32)
+
+            // Fixed bottom mood selector
+            moodSelector
         }
-        .navigationTitle(liveGroup.name)
-        .navigationBarTitleDisplayMode(.large)
+        // Floating top-right buttons
+        .overlay(alignment: .topTrailing) {
+            HStack(spacing: 10) {
+                // + (add members)
+                Button { showAddMembers = true } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 42, height: 42)
+                        .background(Circle().fill(Color(hex: "B8721C")))
+                }
+                .buttonStyle(.plain)
+
+                // Settings
+                Button { showSettings = true } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color(hex: "3C392A").opacity(0.5))
+                        .frame(width: 42, height: 42)
+                        .background(Circle().fill(Color(hex: "EDE8D8")))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.trailing, 20)
+            .padding(.top, 16)
+        }
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showAddMembers) {
             AddMembersView(group: liveGroup)
                 .environmentObject(groupService)
                 .environmentObject(authService)
         }
+        .fullScreenCover(isPresented: $showWidgetTutorial) {
+            WidgetTutorialView(onDismiss: { showWidgetTutorial = false })
+        }
+        .confirmationDialog("", isPresented: $showSettings, titleVisibility: .hidden) {
+            Button("Leave the group", role: .destructive) {
+                Task {
+                    await groupService.leaveGroup(id: liveGroup.id)
+                    dismiss()
+                }
+            }
+            Button("How to add the widget") {
+                showWidgetTutorial = true
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
-}
 
-// MARK: - Couple Heart Section
+    // MARK: - Member row
 
-struct CoupleHeartSection: View {
-    let count: Int
-    let onTap: () -> Void
+    private func memberRow(_ member: User) -> some View {
+        HStack(spacing: 14) {
+            let mood = liveGroup.currentMoods[member.id] ?? .happy
+            Image(mood.displayImageName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 68, height: 68)
 
-    var body: some View {
-        HStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Hearts")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("\(count)")
-                    .font(.system(size: 52, weight: .bold, design: .rounded))
-                    .foregroundStyle(.pink)
-                    .contentTransition(.numericText())
-                    .animation(.spring(response: 0.35, dampingFraction: 0.7), value: count)
+            HStack(spacing: 5) {
+                Text(member.name)
+                    .font(Font.custom("EBGaramond-Bold", size: 20))
+                    .foregroundStyle(Color(hex: "3C392A"))
+
+                Text("•")
+                    .font(Font.custom("EBGaramond-Medium", size: 18))
+                    .foregroundStyle(Color(hex: "837C5A"))
+
+                Text(formattedTime(liveGroup.moodTimestamps[member.id]))
+                    .font(Font.custom("EBGaramond-Medium", size: 18))
+                    .foregroundStyle(Color(hex: "837C5A"))
             }
 
             Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+    }
 
-            Button(action: onTap) {
-                Image(systemName: "heart.fill")
-                    .font(.title)
-                    .foregroundStyle(.white)
-                    .frame(width: 64, height: 64)
-                    .background(Color.pink)
-                    .clipShape(Circle())
-                    .shadow(color: .pink.opacity(0.4), radius: 8, y: 4)
+    // MARK: - Bottom mood selector
+
+    private var moodSelector: some View {
+        HStack(spacing: 10) {
+            ForEach(Mood.cardMoods) { mood in
+                Button {
+                    Task {
+                        await groupService.updateMood(mood, for: currentUserId, in: liveGroup.id)
+                    }
+                } label: {
+                    Group {
+                        if let imgName = mood.buttonImageName {
+                            Image(imgName)
+                                .resizable()
+                                .scaledToFit()
+                                .padding(10)
+                        } else {
+                            Text(mood.emoji).font(.title2)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(1, contentMode: .fit)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color(hex: "E4BF89"))
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.bottom, 44)
+        .padding(.top, 12)
+        .background(
+            Color(hex: "FFFCED")
+                .ignoresSafeArea()
+                .shadow(color: Color(hex: "3C392A").opacity(0.07), radius: 10, y: -4)
+        )
     }
-}
 
-// MARK: - Mood Canvas Card
+    // MARK: - Time helper
 
-struct MoodCanvasCard: View {
-    let group: MoodGroup
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(group.type.backgroundGradient)
-            .frame(maxWidth: .infinity)
-            .frame(height: 180)
-            .overlay {
-                VStack(spacing: 12) {
-                    Text(group.name)
-                        .font(.title2.bold())
-                        .foregroundStyle(.white)
-
-                    HStack(spacing: 16) {
-                        ForEach(group.members) { member in
-                            VStack(spacing: 4) {
-                                Text(group.currentMoods[member.id]?.emoji ?? "·")
-                                    .font(.title)
-                                Text(member.name)
-                                    .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.85))
-                            }
-                        }
-                    }
-                }
-            }
-    }
-}
-
-// MARK: - Member Mood Row
-
-struct MemberMoodRow: View {
-    let member: User
-    let mood: Mood?
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(Color.secondary.opacity(0.2))
-                .frame(width: 40, height: 40)
-                .overlay {
-                    Text(String(member.name.prefix(1)).uppercased())
-                        .font(.subheadline.bold())
-                }
-
-            Text(member.name)
-                .font(.subheadline)
-
-            Spacer()
-
-            if let mood {
-                HStack(spacing: 4) {
-                    Text(mood.emoji)
-                    Text(mood.label)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                Text("–")
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.vertical, 10)
+    private func formattedTime(_ isoString: String?) -> String {
+        guard let isoString, !isoString.isEmpty else { return "" }
+        let f1 = ISO8601DateFormatter()
+        f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let f2 = ISO8601DateFormatter()
+        f2.formatOptions = [.withInternetDateTime]
+        let date = f1.date(from: isoString) ?? f2.date(from: isoString)
+        guard let date else { return "" }
+        let display = DateFormatter()
+        display.dateFormat = "h:mm a"
+        return display.string(from: date)
     }
 }
 

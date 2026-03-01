@@ -7,65 +7,89 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		004BA8573613ABAA91160FCA /* EBGaramond-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CDACCF85AFE2F6C68A8C1C5D /* EBGaramond-Medium.ttf */; };
+		04D27B0C9F232C86E00EA621 /* EmptyHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA45C663D165576188DFE6F0 /* EmptyHomeView.swift */; };
 		0C8F61C3FF9DFA2DF32619F0 /* GroupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */; };
 		0C9DC2B58B022D44ACCB91C3 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
+		0D2B84B4339523ACF382A8E4 /* EBGaramond-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 914C26AE70A609FFFEF67294 /* EBGaramond-Italic.ttf */; };
 		0ED8073CEF6558DA7A901540 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03E7742DB5065F02E40051B9 /* FirebaseAuth */; };
 		119E618AC1CAA6AABD86BD70 /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
 		11BCA73CB17B23A921F40630 /* AddMembersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */; };
+		1409742A62F7F1F487DC27EE /* EBGaramond-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BD465145FB32D773CCAA76F5 /* EBGaramond-SemiBold.ttf */; };
 		15F5E30450B7D70D909EA01D /* PendingInvitationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2565F5E51B17A08C4B9FE9B2 /* PendingInvitationsView.swift */; };
 		19A003EF7EC68BB76BDA2501 /* GroupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53BFA96DB5675B0BE28E536 /* GroupService.swift */; };
 		1AA663310D024A85E4D3D49B /* MoodCanvasWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5794460D9A4D68FFB20A497E /* MoodCanvasWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1C8B1D676447ABCC5E840DC2 /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1FCB8E83672985FACCA26E /* Mood.swift */; };
+		1D7C0F515FD06EC409856429 /* GroupNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1C7DD0FC70981D30F173FF /* GroupNameView.swift */; };
 		2A078B81DDBA957B5B2B7A92 /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
+		2C2B823D4BBE93E0320A22D6 /* EBGaramond-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DCDE44E828745F8EDA0438C1 /* EBGaramond-Medium.ttf */; };
+		2DAE3DC29C9FE97219CC2C78 /* EBGaramond-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 956A28286BCB02B2300E4DCC /* EBGaramond-MediumItalic.ttf */; };
 		344BF4424C613A56DB9B1EF7 /* NameEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAEEA6D130696974FEA897B0 /* NameEntryView.swift */; };
 		3456669AE3279F6302F235E0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
+		34C89763EB16B3812EBD9E44 /* EBGaramond-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8D807C633C03E6CE77A3F2C0 /* EBGaramond-ExtraBold.ttf */; };
 		378D47D535263EEDFE09C288 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 013EB86F1C13D1A1599CFF12 /* Assets.xcassets */; };
 		38DAFA5A5062E15DD61DAD00 /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
 		3B9708CD8CF74A82DEBE5B9D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D9B6307BE0392945C86E1B /* SwiftUI.framework */; };
 		3DA361244A25E2135C498E5B /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
+		3F36B3D58CB7874CD7DBFE7C /* GroupAddFriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CED66F4CDBB6BE0C0EF855 /* GroupAddFriendsView.swift */; };
 		3F8CA148ABDA0A6D460ECA68 /* MoodCanvasWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */; };
 		4461654EF95A882F37D86FB5 /* PhoneNumberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5839D65AAD602CA4384E73 /* PhoneNumberView.swift */; };
 		47AACFCBFE40264E5C0124EB /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1FCB8E83672985FACCA26E /* Mood.swift */; };
+		4BD2B4EEE0955D4F70614E5D /* EditGroupNameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F9C8DE73F378EF90EFF03F /* EditGroupNameSheet.swift */; };
 		4CF0526373F73B06E0EEC529 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721BF815802CDF00078A688C /* Group.swift */; };
 		4F905B07A6D4060B8B4ABC7F /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534878071BA46E8801BFDBEC /* SupabaseService.swift */; };
 		514E4EE901519D8FC5AC1F90 /* MoodCanvasWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45C8A921F87F0BE569F5014C /* MoodCanvasWidgetBundle.swift */; };
 		51CEB2CA52445ED33DD6F37E /* EdgeFunctionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE55A1876465D7BB38412C8 /* EdgeFunctionService.swift */; };
 		528E12E6622AD73EF12A9E42 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F33D09178DD662E06302BA1 /* WelcomeView.swift */; };
 		55DF239EAF870FD7B10C1F84 /* Messages.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */; };
+		5B85EBA8DED9DCFFBD5B2226 /* EBGaramond-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F4ED2506906AA2B7BF0164B8 /* EBGaramond-Bold.ttf */; };
 		5F3E015482B0F5040F484030 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805CE2719F0CF51C922BEB8E /* AuthService.swift */; };
 		6105544F8CD0FF11378B88E7 /* MoodCanvasiMessage.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		66970FEC6B09DB14CA31EE09 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
 		69BCB1948D837352F28DA261 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D9B6307BE0392945C86E1B /* SwiftUI.framework */; };
+		6FBB6193AE6DF53A5BB35EC5 /* GroupCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDDD98687F129F7A54A0F8F /* GroupCardView.swift */; };
 		6FCF07362784304789B11BF8 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721BF815802CDF00078A688C /* Group.swift */; };
+		78BF2F895F9146A0D1C3ECF2 /* InvitationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF19FDC5963E023EFD9B56C /* InvitationCardView.swift */; };
 		7A201DA4DC920E8F326BEE0A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D7C42D805AF8ECEC8C38918 /* WidgetKit.framework */; };
+		7AEBC548FCA05FE2A07E7ED8 /* EBGaramond-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8654F248523FDED88D816211 /* EBGaramond-Regular.ttf */; };
 		8B4D9D957A96648E9FD61DDB /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721BF815802CDF00078A688C /* Group.swift */; };
+		8DA3090C85E676FE7B3F8D3C /* EBGaramond-Italic-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8692AAA12CFCC3EC10EABB25 /* EBGaramond-Italic-VariableFont_wght.ttf */; };
+		90A1A0B3E8C4C569BD8B2990 /* EBGaramond-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CCC7BA15CF332AB8351CE15A /* EBGaramond-SemiBoldItalic.ttf */; };
 		92707DE5272A85C64AB4D045 /* CreateGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */; };
 		956DEDDDD786E1F5DBF7B29D /* VerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170202014D8BAB2448574A15 /* VerificationView.swift */; };
 		97B9F5E71E4BF4953314D4FB /* MoodIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22D4AFA7689E04827F66024 /* MoodIntents.swift */; };
 		9A48AC59B7C958367132AF56 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAF79B2900C1228FFAF0137 /* AppDelegate.swift */; };
+		9AD0CAD7C2D0E40AC8F321E4 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7011B6F0B600AF369DF89B6A /* Color+Hex.swift */; };
 		9B72FC0784BDE1CF670C4D3D /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
 		A3B077C55D72727214B1B6CF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */; };
 		B12B48C9A104F1F3E8220C30 /* MoodCanvasiMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD78346673F4E5D691C7B988 /* MoodCanvasiMessageView.swift */; };
+		B646E36B7A4ADF743FBB32D8 /* WidgetTutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3B21C514434B057B76BD0B /* WidgetTutorialView.swift */; };
 		B9955F511413988E7C467F4A /* Secrets.xcconfig.example in Resources */ = {isa = PBXBuildFile; fileRef = 5564D72B6E1177B3D044DAAA /* Secrets.xcconfig.example */; };
 		B999157D558B6F9BF63C0A14 /* Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1FCB8E83672985FACCA26E /* Mood.swift */; };
 		B9BFCE701B45E8F70804E8AD /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3C199368F42F421C2C366C /* KeychainService.swift */; };
 		BC8F1017A9C5327BA65C0D03 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504F52BA1607FA129D5BE3E7 /* HomeView.swift */; };
+		BC9DE38C43A1BF5DFE2EE2AA /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 811E66D23C92B0ACFE92AEC1 /* PaywallView.swift */; };
+		BDD54718E06209F0AF3047CA /* EBGaramond-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 23E424B9A270AC16A9195A9D /* EBGaramond-BoldItalic.ttf */; };
 		C12B8667B3EE8DF8561DC5AC /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C674996366F59315A111FCC7 /* MessagesViewController.swift */; };
 		C246934649BA0E2609207556 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 7A84C7BE8C70128CA9968D48 /* Supabase */; };
 		C8995CBEF14F2AB77425B2F9 /* MoodCanvasApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB212D24559A2E5357D9F00 /* MoodCanvasApp.swift */; };
+		D228F5431B9B95E00E3F50C0 /* GroupTypePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5058E4EF7BEEA62B3D52CAE /* GroupTypePickerView.swift */; };
+		D3038CA2742DB5F993801200 /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EDA362737FCDD272B8FB86D /* InstrumentSerif-Italic.ttf */; };
 		D5C1FAF76D3541A9FD114370 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E03BD0315C48F2397CF4FD5 /* AppConfig.swift */; };
 		D631B1D03C82818581133EC0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54F2092B4A16D5A53FD59D7 /* ContentView.swift */; };
 		D6FD9345D76BC4BC6E64847D /* GroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FA3C198E1309331768A7BB /* GroupDetailView.swift */; };
 		D81C779A143CEC5AE0BD15D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */; };
 		D8FF08FF58C2DB11AE941F6E /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
+		D978006775A02CD47061DC14 /* MessageComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B204F308B66040938B05413C /* MessageComposeView.swift */; };
 		DE0559F410A3CAF9B69CE7F7 /* MoodWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F30B166166DFAF22644D5D /* MoodWidgetEntryView.swift */; };
+		E0560A21BEBA6CF712EA683D /* EBGaramond-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CDEAC54DA5064E0582A4CE4D /* EBGaramond-ExtraBoldItalic.ttf */; };
 		E16B86A9A1EE9B6322128547 /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1DADC44B78814323E109A98 /* ContactPickerView.swift */; };
 		F47D267CD46730314DDCB48E /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
+		F6E0FA8F247D9089B14A0D4C /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD60530348D37FD1FF3D6A43 /* MessageUI.framework */; };
+		F95CAA30D4E5FC926FAADE82 /* EBGaramond-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E8BE53DFD5DA49F726A1FD6D /* EBGaramond-VariableFont_wght.ttf */; };
 		F960527C33E95901C150F412 /* GroupInvitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */; };
 		FA853CD5090405E14D3786EA /* AppGroupConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21102272A92B4A700819E447 /* AppGroupConstants.swift */; };
 		FE76DA619BE5F04DFC164E24 /* ContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D857802AAD2B6121D8B6B99 /* ContactsService.swift */; };
-		47569EE59F2759192FBDEC37 /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 137228D1795ACE00551854FC /* InstrumentSerif-Italic.ttf */; };
-		D68012857599217793959444 /* EBGaramond-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F7842ED93DC618B2738F0AC /* EBGaramond-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -105,6 +129,7 @@
 		170202014D8BAB2448574A15 /* VerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationView.swift; sourceTree = "<group>"; };
 		1E03BD0315C48F2397CF4FD5 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		21102272A92B4A700819E447 /* AppGroupConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupConstants.swift; sourceTree = "<group>"; };
+		23E424B9A270AC16A9195A9D /* EBGaramond-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-BoldItalic.ttf"; sourceTree = "<group>"; };
 		2565F5E51B17A08C4B9FE9B2 /* PendingInvitationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationsView.swift; sourceTree = "<group>"; };
 		26FA3C198E1309331768A7BB /* GroupDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupDetailView.swift; sourceTree = "<group>"; };
 		3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMembersView.swift; sourceTree = "<group>"; };
@@ -122,37 +147,60 @@
 		5E3D75FA666D5457640904FA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6CB2805CC6D8EBAC38F5727D /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6D1C7DD0FC70981D30F173FF /* GroupNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupNameView.swift; sourceTree = "<group>"; };
 		6D7C42D805AF8ECEC8C38918 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		6E6625BFF33FE7952C4035E7 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		6F33D09178DD662E06302BA1 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		7011B6F0B600AF369DF89B6A /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		721BF815802CDF00078A688C /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasWidget.swift; sourceTree = "<group>"; };
 		7BC17E476A932501434573E6 /* WidgetDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataService.swift; sourceTree = "<group>"; };
 		805CE2719F0CF51C922BEB8E /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		811E66D23C92B0ACFE92AEC1 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGroupView.swift; sourceTree = "<group>"; };
+		8654F248523FDED88D816211 /* EBGaramond-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Regular.ttf"; sourceTree = "<group>"; };
+		8692AAA12CFCC3EC10EABB25 /* EBGaramond-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
+		89F9C8DE73F378EF90EFF03F /* EditGroupNameSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGroupNameSheet.swift; sourceTree = "<group>"; };
 		8B4CE9928F3CC3376611BE5B /* MoodCanvasWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodCanvasWidget.entitlements; sourceTree = "<group>"; };
+		8D807C633C03E6CE77A3F2C0 /* EBGaramond-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-ExtraBold.ttf"; sourceTree = "<group>"; };
+		8EDA362737FCDD272B8FB86D /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
+		914C26AE70A609FFFEF67294 /* EBGaramond-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Italic.ttf"; sourceTree = "<group>"; };
+		956A28286BCB02B2300E4DCC /* EBGaramond-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-MediumItalic.ttf"; sourceTree = "<group>"; };
 		9C03E5BBB4B0F5916599FAFA /* MoodCanvas.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MoodCanvas.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FB212D24559A2E5357D9F00 /* MoodCanvasApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasApp.swift; sourceTree = "<group>"; };
+		A2CED66F4CDBB6BE0C0EF855 /* GroupAddFriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupAddFriendsView.swift; sourceTree = "<group>"; };
 		A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ACAF79B2900C1228FFAF0137 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AFF19FDC5963E023EFD9B56C /* InvitationCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationCardView.swift; sourceTree = "<group>"; };
+		B204F308B66040938B05413C /* MessageComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageComposeView.swift; sourceTree = "<group>"; };
 		B3F30B166166DFAF22644D5D /* MoodWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodWidgetEntryView.swift; sourceTree = "<group>"; };
+		B5058E4EF7BEEA62B3D52CAE /* GroupTypePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupTypePickerView.swift; sourceTree = "<group>"; };
 		B53BFA96DB5675B0BE28E536 /* GroupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupService.swift; sourceTree = "<group>"; };
+		BC3B21C514434B057B76BD0B /* WidgetTutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetTutorialView.swift; sourceTree = "<group>"; };
+		BD465145FB32D773CCAA76F5 /* EBGaramond-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-SemiBold.ttf"; sourceTree = "<group>"; };
 		BD78346673F4E5D691C7B988 /* MoodCanvasiMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCanvasiMessageView.swift; sourceTree = "<group>"; };
 		C22D4AFA7689E04827F66024 /* MoodIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodIntents.swift; sourceTree = "<group>"; };
 		C54C7951AB75D4B0F40943B8 /* MoodCanvas.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MoodCanvas.entitlements; sourceTree = "<group>"; };
 		C54F2092B4A16D5A53FD59D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C674996366F59315A111FCC7 /* MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
+		CCC7BA15CF332AB8351CE15A /* EBGaramond-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
+		CDACCF85AFE2F6C68A8C1C5D /* EBGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Medium.ttf"; sourceTree = "<group>"; };
+		CDDDD98687F129F7A54A0F8F /* GroupCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupCardView.swift; sourceTree = "<group>"; };
+		CDEAC54DA5064E0582A4CE4D /* EBGaramond-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		CE5839D65AAD602CA4384E73 /* PhoneNumberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumberView.swift; sourceTree = "<group>"; };
 		CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Messages.framework; path = System/Library/Frameworks/Messages.framework; sourceTree = SDKROOT; };
 		D1DADC44B78814323E109A98 /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPickerView.swift; sourceTree = "<group>"; };
 		DAEEA6D130696974FEA897B0 /* NameEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameEntryView.swift; sourceTree = "<group>"; };
+		DCDE44E828745F8EDA0438C1 /* EBGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Medium.ttf"; sourceTree = "<group>"; };
 		DD3C199368F42F421C2C366C /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		DD60530348D37FD1FF3D6A43 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		DDB16A98BC6A13C08048EA16 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E70CDBC2914C36B73D22D182 /* GroupInvitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupInvitation.swift; sourceTree = "<group>"; };
+		E8BE53DFD5DA49F726A1FD6D /* EBGaramond-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-VariableFont_wght.ttf"; sourceTree = "<group>"; };
+		EA45C663D165576188DFE6F0 /* EmptyHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyHomeView.swift; sourceTree = "<group>"; };
+		F4ED2506906AA2B7BF0164B8 /* EBGaramond-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Bold.ttf"; sourceTree = "<group>"; };
 		F6D9B6307BE0392945C86E1B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MoodCanvasiMessage.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		137228D1795ACE00551854FC /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "InstrumentSerif-Italic.ttf"; path = "Fonts/InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
-		6F7842ED93DC618B2738F0AC /* EBGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "EBGaramond-Medium.ttf"; path = "Fonts/EBGaramond-Medium.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,6 +219,7 @@
 			files = (
 				0ED8073CEF6558DA7A901540 /* FirebaseAuth in Frameworks */,
 				C246934649BA0E2609207556 /* Supabase in Frameworks */,
+				F6E0FA8F247D9089B14A0D4C /* MessageUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -195,6 +244,14 @@
 				6F33D09178DD662E06302BA1 /* WelcomeView.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		12E65FFE018765A9DEC355A1 /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				811E66D23C92B0ACFE92AEC1 /* PaywallView.swift */,
+			);
+			path = Paywall;
 			sourceTree = "<group>";
 		};
 		18D31DE675606BB5ED6D895E /* Services */ = {
@@ -251,7 +308,13 @@
 				3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */,
 				D1DADC44B78814323E109A98 /* ContactPickerView.swift */,
 				84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */,
+				89F9C8DE73F378EF90EFF03F /* EditGroupNameSheet.swift */,
+				A2CED66F4CDBB6BE0C0EF855 /* GroupAddFriendsView.swift */,
 				26FA3C198E1309331768A7BB /* GroupDetailView.swift */,
+				6D1C7DD0FC70981D30F173FF /* GroupNameView.swift */,
+				B5058E4EF7BEEA62B3D52CAE /* GroupTypePickerView.swift */,
+				B204F308B66040938B05413C /* MessageComposeView.swift */,
+				BC3B21C514434B057B76BD0B /* WidgetTutorialView.swift */,
 			);
 			path = Groups;
 			sourceTree = "<group>";
@@ -268,12 +331,20 @@
 			);
 			sourceTree = "<group>";
 		};
+		7C5D652691940AD43BAFE4A5 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				DCDE44E828745F8EDA0438C1 /* EBGaramond-Medium.ttf */,
+				8EDA362737FCDD272B8FB86D /* InstrumentSerif-Italic.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		82F82254C9D1FC3192E0A4D4 /* MoodCanvasWidget */ = {
 			isa = PBXGroup;
 			children = (
+				7C5D652691940AD43BAFE4A5 /* Fonts */,
 				013EB86F1C13D1A1599CFF12 /* Assets.xcassets */,
-				137228D1795ACE00551854FC /* InstrumentSerif-Italic.ttf */,
-				6F7842ED93DC618B2738F0AC /* EBGaramond-Medium.ttf */,
 				5E3D75FA666D5457640904FA /* Info.plist */,
 				8B4CE9928F3CC3376611BE5B /* MoodCanvasWidget.entitlements */,
 				7B5584FA69AB78FEC1CE5021 /* MoodCanvasWidget.swift */,
@@ -327,6 +398,7 @@
 			isa = PBXGroup;
 			children = (
 				CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */,
+				DD60530348D37FD1FF3D6A43 /* MessageUI.framework */,
 				F6D9B6307BE0392945C86E1B /* SwiftUI.framework */,
 				6D7C42D805AF8ECEC8C38918 /* WidgetKit.framework */,
 			);
@@ -336,10 +408,21 @@
 		BF7261C6837E82E5DA8C026C /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				EA45C663D165576188DFE6F0 /* EmptyHomeView.swift */,
+				CDDDD98687F129F7A54A0F8F /* GroupCardView.swift */,
 				4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */,
 				504F52BA1607FA129D5BE3E7 /* HomeView.swift */,
+				AFF19FDC5963E023EFD9B56C /* InvitationCardView.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		C4E8A96C83DD17D9A0AF1042 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				7011B6F0B600AF369DF89B6A /* Color+Hex.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		C7811BB2E35E3142964BAD45 /* MoodCanvas */ = {
@@ -347,10 +430,13 @@
 			children = (
 				9855D0952F0B7696805D05B3 /* App */,
 				F36CE6643EE3EFB3A79E121D /* Config */,
+				C4E8A96C83DD17D9A0AF1042 /* Extensions */,
+				D79F2A28AF95BE8D111CAEB9 /* Fonts */,
 				6E12DDDF5CFF205EC6B05E3E /* Groups */,
 				BF7261C6837E82E5DA8C026C /* Home */,
 				4B16A71BCB03E18FE88EA173 /* Invitations */,
 				03C96F1789423DC9F406D41B /* Onboarding */,
+				12E65FFE018765A9DEC355A1 /* Paywall */,
 				A490AF413E9F2832A38E5340 /* Resources */,
 				18D31DE675606BB5ED6D895E /* Services */,
 				602F058E39F2ECE55ADB3D5D /* GoogleService-Info.plist */,
@@ -358,6 +444,25 @@
 				C54C7951AB75D4B0F40943B8 /* MoodCanvas.entitlements */,
 			);
 			path = MoodCanvas;
+			sourceTree = "<group>";
+		};
+		D79F2A28AF95BE8D111CAEB9 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F4ED2506906AA2B7BF0164B8 /* EBGaramond-Bold.ttf */,
+				23E424B9A270AC16A9195A9D /* EBGaramond-BoldItalic.ttf */,
+				8D807C633C03E6CE77A3F2C0 /* EBGaramond-ExtraBold.ttf */,
+				CDEAC54DA5064E0582A4CE4D /* EBGaramond-ExtraBoldItalic.ttf */,
+				8692AAA12CFCC3EC10EABB25 /* EBGaramond-Italic-VariableFont_wght.ttf */,
+				914C26AE70A609FFFEF67294 /* EBGaramond-Italic.ttf */,
+				CDACCF85AFE2F6C68A8C1C5D /* EBGaramond-Medium.ttf */,
+				956A28286BCB02B2300E4DCC /* EBGaramond-MediumItalic.ttf */,
+				8654F248523FDED88D816211 /* EBGaramond-Regular.ttf */,
+				BD465145FB32D773CCAA76F5 /* EBGaramond-SemiBold.ttf */,
+				CCC7BA15CF332AB8351CE15A /* EBGaramond-SemiBoldItalic.ttf */,
+				E8BE53DFD5DA49F726A1FD6D /* EBGaramond-VariableFont_wght.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		EB8F0EE85D1A9EAD2CF94124 /* Products */ = {
@@ -498,8 +603,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				378D47D535263EEDFE09C288 /* Assets.xcassets in Resources */,
-				47569EE59F2759192FBDEC37 /* InstrumentSerif-Italic.ttf in Resources */,
-				D68012857599217793959444 /* EBGaramond-Medium.ttf in Resources */,
+				2C2B823D4BBE93E0320A22D6 /* EBGaramond-Medium.ttf in Resources */,
+				D3038CA2742DB5F993801200 /* InstrumentSerif-Italic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -508,6 +613,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				D81C779A143CEC5AE0BD15D8 /* Assets.xcassets in Resources */,
+				5B85EBA8DED9DCFFBD5B2226 /* EBGaramond-Bold.ttf in Resources */,
+				BDD54718E06209F0AF3047CA /* EBGaramond-BoldItalic.ttf in Resources */,
+				34C89763EB16B3812EBD9E44 /* EBGaramond-ExtraBold.ttf in Resources */,
+				E0560A21BEBA6CF712EA683D /* EBGaramond-ExtraBoldItalic.ttf in Resources */,
+				8DA3090C85E676FE7B3F8D3C /* EBGaramond-Italic-VariableFont_wght.ttf in Resources */,
+				0D2B84B4339523ACF382A8E4 /* EBGaramond-Italic.ttf in Resources */,
+				004BA8573613ABAA91160FCA /* EBGaramond-Medium.ttf in Resources */,
+				2DAE3DC29C9FE97219CC2C78 /* EBGaramond-MediumItalic.ttf in Resources */,
+				7AEBC548FCA05FE2A07E7ED8 /* EBGaramond-Regular.ttf in Resources */,
+				1409742A62F7F1F487DC27EE /* EBGaramond-SemiBold.ttf in Resources */,
+				90A1A0B3E8C4C569BD8B2990 /* EBGaramond-SemiBoldItalic.ttf in Resources */,
+				F95CAA30D4E5FC926FAADE82 /* EBGaramond-VariableFont_wght.ttf in Resources */,
 				A3B077C55D72727214B1B6CF /* GoogleService-Info.plist in Resources */,
 				B9955F511413988E7C467F4A /* Secrets.xcconfig.example in Resources */,
 			);
@@ -525,21 +642,31 @@
 				9A48AC59B7C958367132AF56 /* AppDelegate.swift in Sources */,
 				38DAFA5A5062E15DD61DAD00 /* AppGroupConstants.swift in Sources */,
 				5F3E015482B0F5040F484030 /* AuthService.swift in Sources */,
+				9AD0CAD7C2D0E40AC8F321E4 /* Color+Hex.swift in Sources */,
 				E16B86A9A1EE9B6322128547 /* ContactPickerView.swift in Sources */,
 				FE76DA619BE5F04DFC164E24 /* ContactsService.swift in Sources */,
 				D631B1D03C82818581133EC0 /* ContentView.swift in Sources */,
 				92707DE5272A85C64AB4D045 /* CreateGroupView.swift in Sources */,
 				51CEB2CA52445ED33DD6F37E /* EdgeFunctionService.swift in Sources */,
+				4BD2B4EEE0955D4F70614E5D /* EditGroupNameSheet.swift in Sources */,
+				04D27B0C9F232C86E00EA621 /* EmptyHomeView.swift in Sources */,
 				4CF0526373F73B06E0EEC529 /* Group.swift in Sources */,
+				3F36B3D58CB7874CD7DBFE7C /* GroupAddFriendsView.swift in Sources */,
+				6FBB6193AE6DF53A5BB35EC5 /* GroupCardView.swift in Sources */,
 				D6FD9345D76BC4BC6E64847D /* GroupDetailView.swift in Sources */,
 				9B72FC0784BDE1CF670C4D3D /* GroupInvitation.swift in Sources */,
+				1D7C0F515FD06EC409856429 /* GroupNameView.swift in Sources */,
 				0C8F61C3FF9DFA2DF32619F0 /* GroupRowView.swift in Sources */,
 				19A003EF7EC68BB76BDA2501 /* GroupService.swift in Sources */,
+				D228F5431B9B95E00E3F50C0 /* GroupTypePickerView.swift in Sources */,
 				BC8F1017A9C5327BA65C0D03 /* HomeView.swift in Sources */,
+				78BF2F895F9146A0D1C3ECF2 /* InvitationCardView.swift in Sources */,
 				B9BFCE701B45E8F70804E8AD /* KeychainService.swift in Sources */,
+				D978006775A02CD47061DC14 /* MessageComposeView.swift in Sources */,
 				1C8B1D676447ABCC5E840DC2 /* Mood.swift in Sources */,
 				C8995CBEF14F2AB77425B2F9 /* MoodCanvasApp.swift in Sources */,
 				344BF4424C613A56DB9B1EF7 /* NameEntryView.swift in Sources */,
+				BC9DE38C43A1BF5DFE2EE2AA /* PaywallView.swift in Sources */,
 				15F5E30450B7D70D909EA01D /* PendingInvitationsView.swift in Sources */,
 				4461654EF95A882F37D86FB5 /* PhoneNumberView.swift in Sources */,
 				4F905B07A6D4060B8B4ABC7F /* SupabaseService.swift in Sources */,
@@ -547,6 +674,7 @@
 				956DEDDDD786E1F5DBF7B29D /* VerificationView.swift in Sources */,
 				528E12E6622AD73EF12A9E42 /* WelcomeView.swift in Sources */,
 				F47D267CD46730314DDCB48E /* WidgetDataService.swift in Sources */,
+				B646E36B7A4ADF743FBB32D8 /* WidgetTutorialView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

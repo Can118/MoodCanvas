@@ -19,6 +19,25 @@ struct GroupAppEntity: AppEntity {
     }
 }
 
+/// Loads groups from AppGroup cache, merging in any debug mock groups written by loadMockGroups().
+/// Debug groups are stored under a separate key so fetchGroups() never overwrites them.
+func mergedGroups() -> [MoodGroup] {
+    let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
+    var groups: [MoodGroup] = []
+    if let data = defaults?.data(forKey: "widget_groups"),
+       let decoded = try? JSONDecoder().decode([MoodGroup].self, from: data) {
+        groups = decoded
+    }
+#if DEBUG
+    if let data = defaults?.data(forKey: "widget_groups_debug"),
+       let debugGroups = try? JSONDecoder().decode([MoodGroup].self, from: data) {
+        let existingIds = Set(groups.map { $0.id })
+        groups += debugGroups.filter { !existingIds.contains($0.id) }
+    }
+#endif
+    return groups
+}
+
 struct GroupQuery: EntityQuery {
     func entities(for identifiers: [String]) async throws -> [GroupAppEntity] {
         loadEntities().filter { identifiers.contains($0.id) }
@@ -29,22 +48,84 @@ struct GroupQuery: EntityQuery {
     }
 
     private func loadEntities() -> [GroupAppEntity] {
-        let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
-        guard
-            let data   = defaults?.data(forKey: "widget_groups"),
-            let groups = try? JSONDecoder().decode([MoodGroup].self, from: data)
-        else { return [] }
-        return groups.map { GroupAppEntity(id: $0.id, name: $0.name, typeName: $0.type.displayName) }
+        return mergedGroups().map { GroupAppEntity(id: $0.id, name: $0.name, typeName: $0.type.displayName) }
     }
 }
 
-// MARK: - Widget Configuration Intent
+// Query that surfaces only couple groups
+struct CoupleGroupQuery: EntityQuery {
+    func entities(for identifiers: [String]) async throws -> [GroupAppEntity] {
+        loadEntities().filter { identifiers.contains($0.id) }
+    }
+    func suggestedEntities() async throws -> [GroupAppEntity] { loadEntities() }
+    private func loadEntities() -> [GroupAppEntity] {
+        mergedGroups()
+            .filter { $0.type == .couple }
+            .map { GroupAppEntity(id: $0.id, name: $0.name, typeName: $0.type.displayName) }
+    }
+}
+
+// Query that surfaces only BFF + family groups with 4+ members (4×4 large widget only)
+// Groups with ≤ 3 members should use the 4×2 medium widget instead.
+struct BFFGroupQuery: EntityQuery {
+    func entities(for identifiers: [String]) async throws -> [GroupAppEntity] {
+        loadEntities().filter { identifiers.contains($0.id) }
+    }
+    func suggestedEntities() async throws -> [GroupAppEntity] { loadEntities() }
+    private func loadEntities() -> [GroupAppEntity] {
+        mergedGroups()
+            .filter { ($0.type == .bff || $0.type == .family) && $0.members.count >= 4 }
+            .map { GroupAppEntity(id: $0.id, name: $0.name, typeName: $0.type.displayName) }
+    }
+}
+
+// Query that surfaces only BFF + family groups with ≤ 3 members (4×2 medium widget only)
+// Groups with 4+ members are intentionally hidden — they should use the 4×4 large widget.
+struct BFFMediumGroupQuery: EntityQuery {
+    func entities(for identifiers: [String]) async throws -> [GroupAppEntity] {
+        loadEntities().filter { identifiers.contains($0.id) }
+    }
+    func suggestedEntities() async throws -> [GroupAppEntity] { loadEntities() }
+    private func loadEntities() -> [GroupAppEntity] {
+        mergedGroups()
+            .filter { ($0.type == .bff || $0.type == .family) && $0.members.count <= 3 }
+            .map { GroupAppEntity(id: $0.id, name: $0.name, typeName: $0.type.displayName) }
+    }
+}
+
+// MARK: - Widget Configuration Intents
 
 struct ConfigurationAppIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "Select Group"
     static var description = IntentDescription("Choose which group's mood canvas to display.")
 
     @Parameter(title: "Group", optionsProvider: GroupQuery())
+    var group: GroupAppEntity?
+}
+
+struct CoupleConfigurationIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Select Couple Group"
+    static var description = IntentDescription("Choose your couple group.")
+
+    @Parameter(title: "Group", optionsProvider: CoupleGroupQuery())
+    var group: GroupAppEntity?
+}
+
+// Used by the 4×4 large widget — shows all BFF + family groups
+struct BFFConfigurationIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Select Group"
+    static var description = IntentDescription("Choose your BFF or Family group.")
+
+    @Parameter(title: "Group", optionsProvider: BFFGroupQuery())
+    var group: GroupAppEntity?
+}
+
+// Used by the 4×2 medium widget — only shows groups with ≤ 3 members
+struct BFFMediumConfigurationIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Select Group"
+    static var description = IntentDescription("Choose your BFF or Family group (up to 3 members).")
+
+    @Parameter(title: "Group", optionsProvider: BFFMediumGroupQuery())
     var group: GroupAppEntity?
 }
 

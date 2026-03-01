@@ -19,6 +19,7 @@ enum EdgeFunctionService {
         struct MatchedUser: Decodable {
             let id: String
             let name: String?
+            let phone: String?
         }
         let matches: [MatchedUser]
     }
@@ -76,7 +77,7 @@ enum EdgeFunctionService {
         case 200:
             let decoded = try JSONDecoder().decode(MatchResponse.self, from: data)
             return decoded.matches.map {
-                User(id: $0.id, name: $0.name ?? "MoodCanvas User", phoneNumber: "")
+                User(id: $0.id, name: $0.name ?? "MoodCanvas User", phoneNumber: $0.phone ?? "")
             }
         case 429:
             throw MCError.rateLimited

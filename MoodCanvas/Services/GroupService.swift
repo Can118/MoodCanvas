@@ -34,8 +34,22 @@ class GroupService: ObservableObject {
                 heartCounts[groups[idx].id] = best
             }
             writeGroupsToSharedContainer()
+
+            // Sync the freshest Keychain JWT to AppGroup so the widget always has
+            // a valid token after every app-open — belt-and-suspenders alongside
+            // AuthService.restoreSession() which also writes to AppGroup at launch.
+            // This covers the case where the JWT was refreshed between app opens
+            // but the widget extension still holds an older copy.
+            let sharedDefaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
+            if let freshJWT = KeychainService.load(.supabaseJWT) {
+                sharedDefaults?.set(freshJWT, forKey: "widget_jwt")
+            }
+
             WidgetCenter.shared.reloadAllTimelines()
-            // Register/refresh device token so this user can receive mood-update pushes
+            // Register/refresh device token so this user can receive mood-update pushes.
+            // Note: AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken also saves
+            // the token immediately when the APNs callback fires; this call handles the
+            // race-condition case where fetchGroups() runs before that callback arrives.
             if let token = UserDefaults.standard.string(forKey: "apns_device_token") {
                 await SupabaseService.shared.saveDeviceToken(token, userId: userId)
             } else {
@@ -82,6 +96,36 @@ class GroupService: ObservableObject {
             }
         } catch {
             print("[Groups] createGroup error: \(error)")
+        }
+    }
+
+    // MARK: - Leave
+
+    func leaveGroup(id: String) async {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        do {
+            try await SupabaseService.shared.leaveGroup(userId: userId, groupId: id)
+            groups.removeAll { $0.id == id }
+            writeGroupsToSharedContainer()
+            WidgetCenter.shared.reloadAllTimelines()
+        } catch {
+            print("[Groups] leaveGroup error: \(error)")
+        }
+    }
+
+    // MARK: - Rename
+
+    func renameGroup(id: String, newName: String) async {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty,
+              let idx = groups.firstIndex(where: { $0.id == id }) else { return }
+        groups[idx].name = trimmed
+        writeGroupsToSharedContainer()
+        WidgetCenter.shared.reloadAllTimelines()
+        do {
+            try await SupabaseService.shared.renameGroup(id: id, name: trimmed)
+        } catch {
+            print("[Groups] renameGroup error: \(error)")
         }
     }
 
@@ -209,11 +253,37 @@ class GroupService: ObservableObject {
         }
     }
 
+    // MARK: - Debug
+
+#if DEBUG
+    /// Replaces the live group list with mock groups covering every member-count size (3–8).
+    /// Tap the flask button in HomeView to invoke this during development.
+    func loadMockGroups() {
+        groups = MoodGroup.allMockGroups
+        writeGroupsToSharedContainer()
+        // Persist mocks to a separate key so fetchGroups() never overwrites them.
+        // The widget queries merge this key with widget_groups, so mock groups
+        // survive the fetchGroups() call that fires when the app re-enters foreground.
+        if let data = try? JSONEncoder().encode(MoodGroup.allMockGroups) {
+            let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
+            defaults?.set(data, forKey: "widget_groups_debug")
+            defaults?.synchronize()
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    func clearMockGroups() {
+        UserDefaults(suiteName: AppGroupConstants.suiteName)?.removeObject(forKey: "widget_groups_debug")
+        UserDefaults(suiteName: AppGroupConstants.suiteName)?.synchronize()
+    }
+#endif
+
     // MARK: - Private
 
     private func writeGroupsToSharedContainer() {
         guard let data = try? JSONEncoder().encode(groups) else { return }
         let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
         defaults?.set(data, forKey: "widget_groups")
+        defaults?.synchronize()
     }
 }

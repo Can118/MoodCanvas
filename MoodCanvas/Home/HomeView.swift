@@ -7,66 +7,34 @@ struct HomeView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var showCreateGroup = false
-    @State private var showInvitations = false
+    @State private var showPaywall     = false
+    @State private var showSettings    = false
+    @State private var selectedGroup: MoodGroup?
+    @State private var renamingGroup: MoodGroup?
+
+    private static let freeGroupLimit = 3
 
     var body: some View {
         NavigationStack {
             Group {
                 if groupService.groups.isEmpty {
-                    emptyState
+                    EmptyHomeView(onCreateGroup: requestContactsThenCreate)
                 } else {
                     groupList
                 }
             }
-            .navigationTitle("MoodCanvas")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if !groupService.pendingInvitations.isEmpty {
-                        Button {
-                            showInvitations = true
-                        } label: {
-                            ZStack(alignment: .topTrailing) {
-                                Image(systemName: "bell.fill")
-                                    .font(.title2)
-                                Text("\(groupService.pendingInvitations.count)")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(4)
-                                    .background(Color.red)
-                                    .clipShape(Circle())
-                                    .offset(x: 8, y: -8)
-                            }
-                        }
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 16) {
-                        Button {
-                            Task {
-                                await groupService.fetchGroups()
-                                await groupService.fetchPendingInvitations()
-                            }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.body)
-                        }
-                        Button {
-                            requestContactsThenCreate()
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                        }
-                    }
-                }
-            }
             .sheet(isPresented: $showCreateGroup) {
-                CreateGroupView()
+                GroupTypePickerView()
                     .environmentObject(groupService)
                     .environmentObject(authService)
             }
-            .sheet(isPresented: $showInvitations) {
-                PendingInvitationsView()
-                    .environmentObject(groupService)
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
+            .sheet(item: $renamingGroup) { group in
+                EditGroupNameSheet(initialName: group.name) { newName in
+                    Task { await groupService.renameGroup(id: group.id, newName: newName) }
+                }
             }
             .task {
                 await groupService.fetchGroups()
@@ -75,8 +43,6 @@ struct HomeView: View {
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active {
                     Task {
-                        // Refresh JWT first so any push-notification or widget call
-                        // that runs immediately after also gets a fresh token.
                         await authService.refreshJWTIfNeeded()
                         await groupService.processPendingWidgetMoods(currentUserId: authService.currentUser?.id)
                         await groupService.fetchGroups()
@@ -84,61 +50,150 @@ struct HomeView: View {
                     }
                 }
             }
-            // Refresh when a mood-update silent push arrives while the app is already
-            // in the foreground (scenePhase stays .active so onChange never fires).
             .onReceive(NotificationCenter.default.publisher(for: .moodUpdateReceived)) { _ in
-                Task {
-                    await groupService.fetchGroups()
-                }
+                Task { await groupService.fetchGroups() }
             }
         }
     }
 
-    // MARK: - Subviews
-
-    private var emptyState: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "person.2.circle")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
-            Text("No groups yet")
-                .font(.title2.bold())
-            Text("Create a group to start sharing moods.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-            Button("Create a Group") {
-                requestContactsThenCreate()
-            }
-            .buttonStyle(.borderedProminent)
-            .padding(.top, 8)
-            Spacer()
-        }
-    }
+    // MARK: - Group list (full custom layout)
 
     private var groupList: some View {
-        List(groupService.groups) { group in
-            NavigationLink(destination: GroupDetailView(group: group)
-                .environmentObject(groupService)
-                .environmentObject(authService)) {
-                GroupRowView(group: group)
+        ZStack(alignment: .bottom) {
+            Color(hex: "FFFCED").ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Invitation cards — shown above group cards
+                    ForEach(groupService.pendingInvitations) { invitation in
+                        InvitationCardView(
+                            invitation: invitation,
+                            onDecline: {
+                                Task { await groupService.respondToInvitation(invitation.id, accept: false) }
+                            },
+                            onAccept: {
+                                Task { await groupService.respondToInvitation(invitation.id, accept: true) }
+                            }
+                        )
+                    }
+
+                    // Group cards
+                    ForEach(groupService.groups) { group in
+                        GroupCardView(
+                            group: group,
+                            currentUserId: authService.currentUser?.id ?? "",
+                            onMoodTap: { mood in
+                                Task {
+                                    if let userId = authService.currentUser?.id {
+                                        await groupService.updateMood(mood, for: userId, in: group.id)
+                                    }
+                                }
+                            },
+                            onRenameTap: { renamingGroup = group }
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture { selectedGroup = group }
+                    }
+
+                    // Bottom padding so last card isn't hidden by floating button
+                    Color.clear.frame(height: 110)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 56)
+            }
+            .refreshable {
+                await groupService.fetchGroups()
+                await groupService.fetchPendingInvitations()
+            }
+            .navigationDestination(item: $selectedGroup) { group in
+                GroupDetailView(group: group)
+                    .environmentObject(groupService)
+                    .environmentObject(authService)
+            }
+
+            // Floating "create a group" button — bottom z-layer
+            floatingCreateButton
+                .padding(.horizontal, 64)
+                .padding(.bottom, 32)
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .overlay(alignment: .topTrailing) {
+            // Floating icon bar — settings (and debug flask) only
+            HStack(spacing: 8) {
+#if DEBUG
+                Button { groupService.loadMockGroups() } label: {
+                    Image(systemName: "flask.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color(hex: "3C392A").opacity(0.5))
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color(hex: "EDE8D8")))
+                }
+                .buttonStyle(.plain)
+#endif
+
+                Button { showSettings = true } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 15))
+                        .foregroundStyle(Color(hex: "3C392A").opacity(0.5))
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color(hex: "EDE8D8")))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.trailing, 24)
+            .padding(.top, 8)
+        }
+        .confirmationDialog("", isPresented: $showSettings, titleVisibility: .hidden) {
+            Button("How to add the widget") { }
+            Button("Follow us on TikTok") { }
+            Button("I need help") { }
+            Button("Sign out", role: .destructive) { authService.signOut() }
+            Button("Cancel", role: .cancel) { }
+        }
+    }
+
+    // MARK: - Floating create button
+
+    private var floatingCreateButton: some View {
+        Button(action: requestContactsThenCreate) {
+            ZStack {
+                Text("create a group")
+                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                HStack {
+                    Spacer()
+                    Text("+")
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .padding(.trailing, 24)
+                }
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 22)
+            .background {
+                Capsule()
+                    .fill(Color(hex: "B8721C"))
+                    .overlay {
+                        Capsule()
+                            .strokeBorder(Color(hex: "3C392A").opacity(0.4), lineWidth: 5)
+                    }
             }
         }
-        .listStyle(.insetGrouped)
-        .refreshable {
-            await groupService.fetchGroups()
-            await groupService.fetchPendingInvitations()
-        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers
 
     private func requestContactsThenCreate() {
+        #if !DEBUG
+        guard groupService.groups.count < Self.freeGroupLimit else {
+            showPaywall = true
+            return
+        }
+        #endif
         let store = CNContactStore()
         store.requestAccess(for: .contacts) { _, _ in
-            DispatchQueue.main.async {
-                showCreateGroup = true
-            }
+            DispatchQueue.main.async { showCreateGroup = true }
         }
     }
 }

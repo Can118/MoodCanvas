@@ -84,6 +84,15 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
 
         // Fetch live data from Supabase (slow path — no pending changes)
         var freshGroups = await WidgetDataService.fetchGroups()
+#if DEBUG
+        // Merge mock groups so pick() can find them even after a Supabase fetch
+        // (mock groups don't exist in Supabase, so the fetch will never return them)
+        if let data = defaults?.data(forKey: "widget_groups_debug"),
+           let debugGroups = try? JSONDecoder().decode([MoodGroup].self, from: data) {
+            let existingIds = Set(freshGroups.map { $0.id })
+            freshGroups += debugGroups.filter { !existingIds.contains($0.id) }
+        }
+#endif
 
         // ── Critical: re-apply any pending mood taps ──────────────────────────
         // When the user taps a mood button, SetMoodIntent writes the new mood to
@@ -166,12 +175,82 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
 
     private func loadGroupsFromCache() -> [MoodGroup]? {
         let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
-        guard
-            let data   = defaults?.data(forKey: "widget_groups"),
-            let groups = try? JSONDecoder().decode([MoodGroup].self, from: data)
-        else { return nil }
-        return groups
+        var groups: [MoodGroup] = []
+        if let data = defaults?.data(forKey: "widget_groups"),
+           let decoded = try? JSONDecoder().decode([MoodGroup].self, from: data) {
+            groups = decoded
+        }
+#if DEBUG
+        if let data = defaults?.data(forKey: "widget_groups_debug"),
+           let debugGroups = try? JSONDecoder().decode([MoodGroup].self, from: data) {
+            let existingIds = Set(groups.map { $0.id })
+            groups += debugGroups.filter { !existingIds.contains($0.id) }
+        }
+#endif
+        return groups.isEmpty ? nil : groups
     }
+}
+
+// MARK: - Thin Provider Wrappers
+
+/// Delegates all logic to MoodWidgetProvider, bridging CoupleConfigurationIntent.
+struct CoupleWidgetProvider: AppIntentTimelineProvider {
+    private let core = MoodWidgetProvider()
+    func placeholder(in context: Context) -> MoodEntry { core.placeholder(in: context) }
+    func snapshot(for configuration: CoupleConfigurationIntent, in context: Context) async -> MoodEntry {
+        var c = ConfigurationAppIntent()
+        // Gallery preview (no group selected yet): show the user's first couple group from cache.
+        // Falls back to core's .preview placeholder if no couple group exists in cache.
+        c.group = configuration.group ?? previewEntity(filter: { $0.type == .couple })
+        return await core.snapshot(for: c, in: context)
+    }
+    func timeline(for configuration: CoupleConfigurationIntent, in context: Context) async -> Timeline<MoodEntry> {
+        var c = ConfigurationAppIntent(); c.group = configuration.group
+        return await core.timeline(for: c, in: context)
+    }
+}
+
+/// Delegates all logic to MoodWidgetProvider, bridging BFFConfigurationIntent (large widget).
+struct BFFWidgetProvider: AppIntentTimelineProvider {
+    private let core = MoodWidgetProvider()
+    func placeholder(in context: Context) -> MoodEntry { core.placeholder(in: context) }
+    func snapshot(for configuration: BFFConfigurationIntent, in context: Context) async -> MoodEntry {
+        var c = ConfigurationAppIntent()
+        // Gallery preview: show the user's first BFF/family group with 4+ members from cache.
+        c.group = configuration.group ?? previewEntity(filter: {
+            ($0.type == .bff || $0.type == .family) && $0.members.count >= 4
+        })
+        return await core.snapshot(for: c, in: context)
+    }
+    func timeline(for configuration: BFFConfigurationIntent, in context: Context) async -> Timeline<MoodEntry> {
+        var c = ConfigurationAppIntent(); c.group = configuration.group
+        return await core.timeline(for: c, in: context)
+    }
+}
+
+/// Delegates all logic to MoodWidgetProvider, bridging BFFMediumConfigurationIntent (medium widget).
+struct BFFMediumWidgetProvider: AppIntentTimelineProvider {
+    private let core = MoodWidgetProvider()
+    func placeholder(in context: Context) -> MoodEntry { core.placeholder(in: context) }
+    func snapshot(for configuration: BFFMediumConfigurationIntent, in context: Context) async -> MoodEntry {
+        var c = ConfigurationAppIntent()
+        // Gallery preview: show the user's first BFF/family group with 2–3 members from cache.
+        c.group = configuration.group ?? previewEntity(filter: {
+            ($0.type == .bff || $0.type == .family) && $0.members.count <= 3
+        })
+        return await core.snapshot(for: c, in: context)
+    }
+    func timeline(for configuration: BFFMediumConfigurationIntent, in context: Context) async -> Timeline<MoodEntry> {
+        var c = ConfigurationAppIntent(); c.group = configuration.group
+        return await core.timeline(for: c, in: context)
+    }
+}
+
+/// Returns a `GroupAppEntity` for the first cached group matching `filter`, or nil if none found.
+/// Used by provider snapshot functions to show a real group in the widget gallery preview.
+private func previewEntity(filter: (MoodGroup) -> Bool) -> GroupAppEntity? {
+    guard let group = mergedGroups().first(where: filter) else { return nil }
+    return GroupAppEntity(id: group.id, name: group.name, typeName: group.type.displayName)
 }
 
 // MARK: - Container Background (family-aware)
@@ -184,48 +263,112 @@ private struct WidgetContainerBackground: View {
     let entry: MoodEntry
 
     var body: some View {
-        switch family {
-        case .systemLarge:
-            entry.group.type.backgroundGradient
-        default:
-            Color(red: 1.0, green: 0.988, blue: 0.929) // #FFFCED
-        }
+        Color(red: 1.0, green: 0.988, blue: 0.929) // #FFFCED — all widget sizes use cream
     }
 }
 
 // MARK: - Widget Definition
 
+// MARK: - Couple Widget (4×2 only)
+
 struct MoodCanvasWidget: Widget {
-    let kind: String = "MoodCanvasWidget"
+    let kind: String = "MoodCanvasCoupleWidget"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(
             kind: kind,
-            intent: ConfigurationAppIntent.self,
-            provider: MoodWidgetProvider()
+            intent: CoupleConfigurationIntent.self,
+            provider: CoupleWidgetProvider()
         ) { entry in
             MoodWidgetEntryView(entry: entry)
                 .containerBackground(for: .widget) {
                     WidgetContainerBackground(entry: entry)
                 }
         }
-        .configurationDisplayName("Mood Canvas")
-        .description("See your group's current moods and update yours.")
-        .supportedFamilies([.systemMedium, .systemLarge])
+        .configurationDisplayName("Moodi — Couple")
+        .description("See your partner's mood and update yours.")
+        .supportedFamilies([.systemMedium])
+    }
+}
+
+// MARK: - BFF / Family Widget — 4×2 Medium (Friends/Family groups with ≤ 3 members only)
+
+struct MoodCanvasBFFMediumWidget: Widget {
+    let kind: String = "MoodCanvasBFFMediumWidget"
+
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(
+            kind: kind,
+            intent: BFFMediumConfigurationIntent.self,
+            provider: BFFMediumWidgetProvider()
+        ) { entry in
+            MoodWidgetEntryView(entry: entry)
+                .containerBackground(for: .widget) {
+                    WidgetContainerBackground(entry: entry)
+                }
+        }
+        .configurationDisplayName("Moodi")
+        .description("Friends/Family · For groups of 2 or 3 members.")
+        .supportedFamilies([.systemMedium])
+    }
+}
+
+// MARK: - BFF / Family Widget — 4×4 Large (Friends/Family groups with 4+ members only)
+
+struct MoodCanvasBFFWidget: Widget {
+    let kind: String = "MoodCanvasBFFWidget"
+
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(
+            kind: kind,
+            intent: BFFConfigurationIntent.self,
+            provider: BFFWidgetProvider()
+        ) { entry in
+            MoodWidgetEntryView(entry: entry)
+                .containerBackground(for: .widget) {
+                    WidgetContainerBackground(entry: entry)
+                }
+        }
+        .configurationDisplayName("Moodi — Large")
+        .description("Friends/Family · For groups of 4 or more members.")
+        .supportedFamilies([.systemLarge])
     }
 }
 
 // MARK: - Previews
 
-#Preview(as: .systemMedium) {
+#Preview("Couple – Medium", as: .systemMedium) {
     MoodCanvasWidget()
 } timeline: {
-    MoodEntry(date: .now, group: .preview, configuration: ConfigurationAppIntent(), currentUserId: "1")
     MoodEntry(date: .now, group: .couplePreview, configuration: ConfigurationAppIntent(), currentUserId: "4")
 }
 
-#Preview(as: .systemLarge) {
-    MoodCanvasWidget()
+#Preview("BFF – Medium (2 members)", as: .systemMedium) {
+    MoodCanvasBFFMediumWidget()
+} timeline: {
+    MoodEntry(date: .now, group: .preview, configuration: ConfigurationAppIntent(), currentUserId: "1")
+}
+
+#Preview("BFF – Medium (3 members)", as: .systemMedium) {
+    MoodCanvasBFFMediumWidget()
+} timeline: {
+    MoodEntry(date: .now, group: .bffThreePreview, configuration: ConfigurationAppIntent(), currentUserId: "1")
+}
+
+#Preview("BFF – Large (4 members)", as: .systemLarge) {
+    MoodCanvasBFFWidget()
+} timeline: {
+    MoodEntry(date: .now, group: .bffLargePreview, configuration: ConfigurationAppIntent(), currentUserId: "1")
+}
+
+#Preview("Family – Medium (3 members)", as: .systemMedium) {
+    MoodCanvasBFFMediumWidget()
+} timeline: {
+    MoodEntry(date: .now, group: .familyPreview, configuration: ConfigurationAppIntent(), currentUserId: "6")
+}
+
+#Preview("Family – Large", as: .systemLarge) {
+    MoodCanvasBFFWidget()
 } timeline: {
     MoodEntry(date: .now, group: .familyPreview, configuration: ConfigurationAppIntent(), currentUserId: "6")
 }

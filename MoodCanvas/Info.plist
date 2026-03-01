@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>MoodCanvas</string>
+	<string>Moodi</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -42,7 +42,7 @@
 	</array>
 
 	<key>NSContactsUsageDescription</key>
-	<string>MoodCanvas uses your contacts to help you find and add friends and family to your groups.</string>
+	<string>Moodi uses your contacts to help you find and add friends and family to your groups.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -53,6 +53,19 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>EBGaramond-Regular.ttf</string>
+		<string>EBGaramond-Italic.ttf</string>
+		<string>EBGaramond-Medium.ttf</string>
+		<string>EBGaramond-MediumItalic.ttf</string>
+		<string>EBGaramond-SemiBold.ttf</string>
+		<string>EBGaramond-SemiBoldItalic.ttf</string>
+		<string>EBGaramond-Bold.ttf</string>
+		<string>EBGaramond-BoldItalic.ttf</string>
+		<string>EBGaramond-ExtraBold.ttf</string>
+		<string>EBGaramond-ExtraBoldItalic.ttf</string>
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Automatic</string>
