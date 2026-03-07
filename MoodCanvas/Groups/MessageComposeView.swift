@@ -26,7 +26,10 @@ struct MessageComposeView: UIViewControllerRepresentable {
             _ controller: MFMessageComposeViewController,
             didFinishWith result: MessageComposeResult
         ) {
-            controller.dismiss(animated: true)
+            // Do NOT call controller.dismiss() — this view is embedded inside a SwiftUI
+            // .sheet and calling UIKit dismiss directly bypasses SwiftUI's binding system,
+            // potentially walking up the presentation chain and dismissing the entire
+            // group-creation navigation stack. Let SwiftUI own the dismissal via onFinish().
             onFinish()
         }
     }

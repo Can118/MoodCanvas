@@ -147,7 +147,34 @@ serve(async (req: Request) => {
       throw new Error("Database error");
     }
 
-    // 6. Create Supabase JWT signed with JWT_SECRET (the project's JWT secret)
+    // 6. Claim any pending phone invitations for this phone number.
+    //    These were created when an existing user sent an iMessage invite to this
+    //    phone before it was registered. Convert each one into a group_invitation
+    //    now that we know the Firebase UID, then mark them claimed so they never
+    //    surface again (idempotent: upsert on group_id,invited_user_id conflict).
+    const { data: pendingPhoneInvites } = await supabase
+      .from("phone_invitations")
+      .select("id, group_id, invited_by")
+      .eq("invited_phone_hash", phoneHash)
+      .eq("status", "pending");
+
+    if (pendingPhoneInvites && pendingPhoneInvites.length > 0) {
+      for (const invite of pendingPhoneInvites) {
+        await supabase
+          .from("group_invitations")
+          .upsert(
+            { group_id: invite.group_id, invited_by: invite.invited_by, invited_user_id: firebaseUID },
+            { onConflict: "group_id,invited_user_id" },
+          );
+        await supabase
+          .from("phone_invitations")
+          .update({ status: "claimed" })
+          .eq("id", invite.id);
+      }
+      console.log(`[authenticate] Claimed ${pendingPhoneInvites.length} phone invitation(s) for new user ${firebaseUID.slice(0, 8)}…`);
+    }
+
+    // 7. Create Supabase JWT signed with JWT_SECRET (the project's JWT secret)
     const jwtSecret = Deno.env.get("JWT_SECRET");
     if (!jwtSecret) throw new Error("JWT_SECRET not configured");
 

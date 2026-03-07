@@ -9,20 +9,65 @@ struct MoodWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        switch family {
-        case .systemMedium:
-            if entry.group.type == .couple {
+        if entry.isEmpty {
+            EmptyWidgetView(groupType: entry.group.type)
+        } else {
+            switch family {
+            case .systemMedium:
+                if entry.group.type == .couple {
+                    MediumWidgetView(entry: entry)
+                } else {
+                    // BFF and Family both use the member-list layout
+                    BFFMediumWidgetView(entry: entry)
+                }
+            case .systemLarge:
+                // Only BFF/Family widget supports large; couple widget never reaches here
+                BFFLargeWidgetView(entry: entry)
+            default:
                 MediumWidgetView(entry: entry)
-            } else {
-                // BFF and Family both use the member-list layout
-                BFFMediumWidgetView(entry: entry)
             }
-        case .systemLarge:
-            // Only BFF/Family widget supports large; couple widget never reaches here
-            BFFLargeWidgetView(entry: entry)
-        default:
-            MediumWidgetView(entry: entry)
         }
+    }
+}
+
+// MARK: - Empty State (no group for this widget type)
+
+struct EmptyWidgetView: View {
+    let groupType: GroupType
+    @Environment(\.widgetFamily) var family
+
+    private let olive = Color(red: 0.40, green: 0.35, blue: 0.22)
+
+    private var subtitle: String {
+        switch groupType {
+        case .couple:
+            return "For you & your partner"
+        default:
+            return family == .systemLarge
+                ? "For groups with 4+ members"
+                : "For groups with 2-3 members"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("No group yet!")
+                .font(.custom("EB Garamond", size: 20).weight(.medium))
+                .foregroundStyle(olive)
+            Text(subtitle)
+                .font(.system(size: 12, weight: .medium))
+                .fontDesign(.rounded)
+                .foregroundStyle(olive.opacity(0.55))
+                .multilineTextAlignment(.center)
+            Text("Tap to create one")
+                .font(.system(size: 13, weight: .medium))
+                .fontDesign(.rounded)
+                .foregroundStyle(olive.opacity(0.65))
+                .padding(.top, 2)
+        }
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .widgetURL(URL(string: "moodi://open")!)
     }
 }
 

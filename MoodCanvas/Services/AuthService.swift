@@ -8,6 +8,10 @@ class AuthService: ObservableObject {
     @Published var needsNameEntry = false
     @Published var currentUser: User?
     @Published var errorMessage: String?
+    /// True from init until the first Firebase auth-state callback resolves.
+    /// During this window we show a neutral blank screen instead of onboarding,
+    /// so a returning user never sees a flash of the login flow.
+    @Published var isRestoringSession = true
 
     private var verificationID: String?
     private var authStateHandle: AuthStateDidChangeListenerHandle?
@@ -24,6 +28,9 @@ class AuthService: ObservableObject {
                 } else {
                     self.clearSession()
                 }
+                // Auth state is now definitively known — stop showing the
+                // blank splash screen regardless of outcome.
+                self.isRestoringSession = false
             }
         }
     }
@@ -126,6 +133,8 @@ class AuthService: ObservableObject {
             try await SupabaseService.shared.updateName(trimmed, userId: uid)
             currentUser?.name = trimmed
             needsNameEntry = false
+            // Signal HomeView to request an App Store rating once on first appearance
+            UserDefaults.standard.set(true, forKey: "requestRatingAfterOnboarding")
         } catch {
             errorMessage = "Could not save your name. Please try again."
         }
@@ -219,13 +228,18 @@ class AuthService: ObservableObject {
     /// APNs registration completes before the user is authenticated, so fetchGroups()
     /// misses the token on first run.
     private func saveDeviceTokenIfAvailable(userId: String) {
-        guard let token = UserDefaults.standard.string(forKey: "apns_device_token") else {
+        guard let token = KeychainService.load(.apnsToken) else {
             print("[Auth] APNs token not available yet at auth time — will be saved by fetchGroups() or APNs callback")
             return
         }
-        print("[Auth] APNs token found at auth time — saving to Supabase now")
+        #if DEBUG
+        let apnsEnvironment = "sandbox"
+        #else
+        let apnsEnvironment = "production"
+        #endif
+        print("[Auth] APNs token found at auth time — saving to Supabase now (env=\(apnsEnvironment))")
         Task {
-            await SupabaseService.shared.saveDeviceToken(token, userId: userId)
+            await SupabaseService.shared.saveDeviceToken(token, userId: userId, environment: apnsEnvironment)
         }
     }
 

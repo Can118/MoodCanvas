@@ -3,11 +3,15 @@ import Security
 
 // MARK: - Key Definitions
 
-enum KeychainKey: String, CaseIterable {
+enum KeychainKey: String {
     case firebaseUID   = "mc_firebase_uid"
     case supabaseJWT   = "mc_supabase_jwt"
     case jwtExpiry     = "mc_jwt_expiry"      // Unix timestamp string
     case phoneE164     = "mc_phone_e164"
+    /// APNs device token. Device-level — persists across sign-out/sign-in cycles
+    /// so the next user to sign in on this device can immediately register the token
+    /// without waiting for iOS to re-fire the APNs callback.
+    case apnsToken     = "mc_apns_token"
 }
 
 // MARK: - Service
@@ -66,8 +70,10 @@ enum KeychainService {
         SecItemDelete(query(for: key) as CFDictionary)
     }
 
+    /// Deletes all user-specific keys. Intentionally excludes `apnsToken` since it
+    /// is tied to the device, not the user account — the next sign-in reuses it.
     static func deleteAll() {
-        KeychainKey.allCases.forEach { delete($0) }
+        [KeychainKey.firebaseUID, .supabaseJWT, .jwtExpiry, .phoneE164].forEach { delete($0) }
     }
 
     // MARK: JWT Helpers

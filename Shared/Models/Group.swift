@@ -141,15 +141,15 @@ extension MoodGroup {
         }
         return MoodGroup(
             id: "bff-three-preview",
-            name: "Trio",
+            name: "OnlyFriends",
             type: .bff,
             members: [
-                User(id: "1", name: "Alex",  phoneNumber: ""),
-                User(id: "2", name: "Aaron", phoneNumber: ""),
-                User(id: "3", name: "Sarah", phoneNumber: ""),
+                User(id: "1", name: "Alex",   phoneNumber: ""),
+                User(id: "2", name: "Jordan", phoneNumber: ""),
+                User(id: "3", name: "Sam",    phoneNumber: ""),
             ],
             currentMoods: ["1": .happy, "2": .angry, "3": .sad],
-            moodTimestamps: ["1": iso(7, 33), "2": iso(13, 59), "3": iso(0, 2)]
+            moodTimestamps: ["1": iso(7, 33), "2": iso(9, 5), "3": iso(11, 45)]
         )
     }
 
@@ -175,25 +175,24 @@ extension MoodGroup {
         }
         return MoodGroup(
             id: "bff-large-preview",
-            name: "Heaven winners",
+            name: "Sisters without Misters",
             type: .bff,
             members: [
-                User(id: "1",  name: "Alex",    phoneNumber: ""),
-                User(id: "2",  name: "Aaron",   phoneNumber: ""),
-                User(id: "3",  name: "Sarah",   phoneNumber: ""),
-                User(id: "4",  name: "Jessica", phoneNumber: ""),
-                User(id: "5",  name: "Emily",   phoneNumber: ""),
-                User(id: "6",  name: "Chris",   phoneNumber: ""),
-                User(id: "7",  name: "Taylor",  phoneNumber: ""),
-                User(id: "8",  name: "Jordan",  phoneNumber: ""),
+                User(id: "1", name: "Emma",   phoneNumber: ""),
+                User(id: "2", name: "Sophie", phoneNumber: ""),
+                User(id: "3", name: "Lily",   phoneNumber: ""),
+                User(id: "4", name: "Chloe",  phoneNumber: ""),
+                User(id: "5", name: "Mia",    phoneNumber: ""),
+                User(id: "6", name: "Zoe",    phoneNumber: ""),
             ],
             currentMoods: [
-                "1": .happy, "2": .angry, "3": .sad,   "4": .tired,
-                "5": .happy, "6": .angry, "7": .sad,   "8": .tired,
+                "1": .happy, "2": .sad,   "3": .angry,
+                "4": .tired, "5": .happy, "6": .sad,
             ],
             moodTimestamps: [
-                "1": iso(7, 33),  "2": iso(13, 59), "3": iso(0, 2),  "4": iso(19, 44),
-                "5": iso(7, 33),  "6": iso(13, 59), "7": iso(0, 2),  "8": iso(3, 22),
+                "1": iso(7, 33),  "2": iso(9, 5),
+                "3": iso(11, 45), "4": iso(13, 59),
+                "5": iso(15, 22), "6": iso(18, 14),
             ]
         )
     }

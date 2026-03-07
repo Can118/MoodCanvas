@@ -25,6 +25,9 @@ class ContactsService: ObservableObject {
     /// Full device contact list, with Moodi status resolved. Populated by fetchAllContactsAndMatch().
     @Published var allContactEntries: [ContactEntry] = []
     @Published var isLoading = false
+    /// True while the background server match (Phase 2) is in flight.
+    /// The picker is already open at this point — the UI shows a subtle indicator.
+    @Published var isMatching = false
     @Published var isSearching = false
     @Published var errorMessage: String?
 
@@ -88,19 +91,24 @@ class ContactsService: ObservableObject {
         }
     }
 
-    /// Reads ALL device contacts, matches them against Moodi users, and
-    /// populates `allContactEntries` with Moodi status attached to each entry.
+    /// Reads ALL device contacts and populates `allContactEntries` in two phases:
+    ///
+    /// **Phase 1** (fast, < 100 ms): reads device contacts, applies any cached Moodi
+    /// status, sets `isLoading = false`, and returns — the picker opens immediately.
+    ///
+    /// **Phase 2** (background): calls the match-contacts server to get fresh Moodi
+    /// status, updates `allContactEntries` while the picker is already visible, and
+    /// saves a 5-minute cache so subsequent opens skip the server call entirely.
     func fetchAllContactsAndMatch() async {
         await authService?.refreshJWTIfNeeded()
         guard let jwt = KeychainService.load(.supabaseJWT) else { return }
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
 
+        // ── Phase 1: local device data ────────────────────────────────────────
         let rawContacts = await readContacts()
-        guard !rawContacts.isEmpty else { return }
+        guard !rawContacts.isEmpty else { isLoading = false; return }
 
-        // Build phone → display name map (local only, never sent)
         var phoneToName: [String: String] = [:]
         for (rawPhone, name) in rawContacts {
             if let e164 = normalizeE164(rawPhone) {
@@ -109,50 +117,60 @@ class ContactsService: ObservableObject {
         }
         let uniquePhones = Array(phoneToName.keys)
 
-        // Build entry list from local device data first — alphabetically, no Moodi status yet.
-        // This ensures contacts are shown even if the server call fails.
+        // Seed from cache so Moodi users are already highlighted before the server responds.
+        let cachedMoodi = loadMatchCache()
         allContactEntries = uniquePhones
             .compactMap { phone -> ContactEntry? in
                 guard let name = phoneToName[phone] else { return nil }
-                return ContactEntry(name: name, phone: phone, moodiUser: nil)
+                return ContactEntry(name: name, phone: phone, moodiUser: cachedMoodi[phone])
             }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-
-        do {
-            let matched = try await EdgeFunctionService.matchContacts(
-                phoneNumbers: uniquePhones,
-                jwt: jwt
-            )
-            matchedUsers = matched
-
-            // Build phone → Moodi user map for O(1) lookup
-            var moodiByPhone: [String: User] = [:]
-            for user in matched where !user.phoneNumber.isEmpty {
-                moodiByPhone[user.phoneNumber] = user
+            .sorted {
+                if $0.isOnMoodi != $1.isOnMoodi { return $0.isOnMoodi }
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
             }
 
-            // Update contact name cache
-            var idToName = Self.loadContactNameCache()
-            for user in matched where !user.phoneNumber.isEmpty {
-                if let name = phoneToName[user.phoneNumber] { idToName[user.id] = name }
-            }
-            Self.saveContactNameCache(idToName)
+        isLoading = false   // picker opens here — Phase 2 runs while it's visible
 
-            // Re-sort with Moodi status: Moodi users first, then alphabetically
-            allContactEntries = uniquePhones
-                .compactMap { phone -> ContactEntry? in
-                    guard let name = phoneToName[phone] else { return nil }
-                    return ContactEntry(name: name, phone: phone, moodiUser: moodiByPhone[phone])
+        // ── Phase 2: server match (skip if cache is still fresh) ──────────────
+        guard !isCacheFresh() else { return }
+        isMatching = true
+
+        Task {
+            defer { isMatching = false }
+            do {
+                let matched = try await EdgeFunctionService.matchContacts(
+                    phoneNumbers: uniquePhones,
+                    jwt: jwt
+                )
+                matchedUsers = matched
+
+                var moodiByPhone: [String: User] = [:]
+                for user in matched where !user.phoneNumber.isEmpty {
+                    moodiByPhone[user.phoneNumber] = user
                 }
-                .sorted {
-                    if $0.isOnMoodi != $1.isOnMoodi { return $0.isOnMoodi }
-                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-                }
+                saveMatchCache(moodiByPhone)
 
-        } catch let error as MCError {
-            errorMessage = error.localizedDescription
-        } catch {
-            errorMessage = "Could not load contacts. Please try again."
+                var idToName = Self.loadContactNameCache()
+                for user in matched where !user.phoneNumber.isEmpty {
+                    if let name = phoneToName[user.phoneNumber] { idToName[user.id] = name }
+                }
+                Self.saveContactNameCache(idToName)
+
+                // Refresh list with authoritative Moodi status
+                allContactEntries = uniquePhones
+                    .compactMap { phone -> ContactEntry? in
+                        guard let name = phoneToName[phone] else { return nil }
+                        return ContactEntry(name: name, phone: phone, moodiUser: moodiByPhone[phone])
+                    }
+                    .sorted {
+                        if $0.isOnMoodi != $1.isOnMoodi { return $0.isOnMoodi }
+                        return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    }
+            } catch let error as MCError {
+                errorMessage = error.localizedDescription
+            } catch {
+                errorMessage = "Could not load contacts. Please try again."
+            }
         }
     }
 
@@ -210,6 +228,51 @@ class ContactsService: ObservableObject {
     private static func saveContactNameCache(_ dict: [String: String]) {
         guard let data = try? JSONEncoder().encode(dict) else { return }
         UserDefaults.standard.set(data, forKey: cacheKey)
+    }
+
+    // MARK: - Match Cache (5-min TTL, per-user)
+
+    private struct MatchCacheEntry: Codable {
+        struct CachedUser: Codable { let id: String; let name: String; let phone: String }
+        let users: [CachedUser]
+        let expiresAt: Double
+    }
+
+    private static let matchCacheTTL: Double = 300  // 5 minutes
+
+    private func matchCacheKey() -> String {
+        "moodi_match_cache_v1_\(authService?.currentUser?.id ?? "anon")"
+    }
+
+    private func loadMatchCache() -> [String: User] {
+        guard let data = UserDefaults.standard.data(forKey: matchCacheKey()),
+              let entry = try? JSONDecoder().decode(MatchCacheEntry.self, from: data),
+              Date().timeIntervalSince1970 < entry.expiresAt
+        else { return [:] }
+        var result: [String: User] = [:]
+        for u in entry.users {
+            result[u.phone] = User(id: u.id, name: u.name, phoneNumber: u.phone)
+        }
+        return result
+    }
+
+    private func isCacheFresh() -> Bool {
+        guard let data = UserDefaults.standard.data(forKey: matchCacheKey()),
+              let entry = try? JSONDecoder().decode(MatchCacheEntry.self, from: data)
+        else { return false }
+        return Date().timeIntervalSince1970 < entry.expiresAt
+    }
+
+    private func saveMatchCache(_ moodiByPhone: [String: User]) {
+        let users = moodiByPhone.values.map {
+            MatchCacheEntry.CachedUser(id: $0.id, name: $0.name, phone: $0.phoneNumber)
+        }
+        let entry = MatchCacheEntry(
+            users: users,
+            expiresAt: Date().timeIntervalSince1970 + Self.matchCacheTTL
+        )
+        guard let data = try? JSONEncoder().encode(entry) else { return }
+        UserDefaults.standard.set(data, forKey: matchCacheKey())
     }
 
     // MARK: - Private

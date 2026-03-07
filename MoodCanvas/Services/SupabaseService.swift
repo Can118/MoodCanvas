@@ -28,10 +28,12 @@ struct SupabaseGroupRecord: Codable {
 struct SupabaseGroupMemberRecord: Codable {
     let groupId: String
     let userId: String
+    let joinedAt: String?
 
     enum CodingKeys: String, CodingKey {
-        case groupId = "group_id"
-        case userId  = "user_id"
+        case groupId  = "group_id"
+        case userId   = "user_id"
+        case joinedAt = "joined_at"
     }
 }
 
@@ -131,23 +133,31 @@ final class SupabaseService {
 
     /// Upserts the APNs device token so the backend can send silent mood-update pushes.
     /// Called from GroupService.fetchGroups() on every app open — fire-and-forget.
-    func saveDeviceToken(_ token: String, userId: String) async {
+    ///
+    /// `environment` must match how the app was installed:
+    ///   - "sandbox"    → debug builds installed via Xcode
+    ///   - "production" → TestFlight or App Store builds
+    /// Sending a sandbox token to the production APNs endpoint (or vice-versa)
+    /// returns 400 BadDeviceToken and the push is silently dropped.
+    func saveDeviceToken(_ token: String, userId: String, environment: String) async {
         struct TokenRecord: Encodable {
             let user_id: String
             let token: String
             let updated_at: String
+            let apns_environment: String
         }
         let record = TokenRecord(
             user_id: userId,
             token: token,
-            updated_at: ISO8601DateFormatter().string(from: Date())
+            updated_at: ISO8601DateFormatter().string(from: Date()),
+            apns_environment: environment
         )
         do {
             try await client
                 .from("device_tokens")
                 .upsert(record, onConflict: "user_id")
                 .execute()
-            print("[Supabase] Device token saved (userId=\(userId.prefix(8))… token=\(token.prefix(8))…)")
+            print("[Supabase] Device token saved (userId=\(userId.prefix(8))… token=\(token.prefix(8))… env=\(environment))")
         } catch {
             print("[Supabase] saveDeviceToken FAILED: \(error) — silent pushes will NOT reach this device")
         }
@@ -156,12 +166,20 @@ final class SupabaseService {
     // MARK: - Groups
 
     func leaveGroup(userId: String, groupId: String) async throws {
-        try await client
+        // Use .select() so PostgREST returns the deleted rows (Prefer: return=representation).
+        // If the RLS policy silently blocks the DELETE, 0 rows come back and we throw —
+        // without this check, a blocked DELETE returns HTTP 200 and Swift sees no error.
+        let deleted: [SupabaseGroupMemberRecord] = try await client
             .from("group_members")
             .delete()
             .eq("user_id", value: userId)
             .eq("group_id", value: groupId)
+            .select()
             .execute()
+            .value
+        guard !deleted.isEmpty else {
+            throw MCError.edgeFunction("Unable to leave the group. Please try again.")
+        }
     }
 
     func renameGroup(id: String, name: String) async throws {
@@ -189,7 +207,7 @@ final class SupabaseService {
         try await client.from("groups").insert(groupRecord).execute()
 
         // Only insert the creator — other members will be invited via group_invitations
-        let creatorMember = SupabaseGroupMemberRecord(groupId: group.id, userId: userId)
+        let creatorMember = SupabaseGroupMemberRecord(groupId: group.id, userId: userId, joinedAt: nil)
         try await client.from("group_members").insert(creatorMember).execute()
     }
 
@@ -245,12 +263,15 @@ final class SupabaseService {
             .execute()
             .value
 
-        // 6. Heart counts for couple groups
+        // 6. Heart counts for couple groups (nil = query failed, [:] = no hearts yet)
         let coupleIds = groups.filter { $0.type == "couple" }.map { $0.id }
-        let heartCountMap = await fetchHeartCounts(for: coupleIds)
+        let heartCountMap: [String: Int]? = await fetchHeartCounts(for: coupleIds)
 
         // 7. Assemble
-        return groups.map { g in
+        // Build a map of groupId → current user's join timestamp for sorting below.
+        let myJoinMap = Dictionary(uniqueKeysWithValues: myMemberships.map { ($0.groupId, $0.joinedAt ?? "") })
+
+        let assembled = groups.map { g in
             let memberIds = allMemberships.filter { $0.groupId == g.id }.map { $0.userId }
             let members   = memberIds.compactMap { userMap[$0] }
             var moods:      [String: Mood]   = [:]
@@ -269,9 +290,15 @@ final class SupabaseService {
                 members: members,
                 currentMoods: moods,
                 moodTimestamps: timestamps,
-                heartCount: heartCountMap[g.id] ?? 0
+                // heartCountMap is nil when the query failed → 0 so GroupService
+                // can detect the failure case via "fetched == 0, current > 0".
+                heartCount: heartCountMap?[g.id] ?? 0
             )
         }
+
+        // Sort newest-joined first (ISO-8601 strings sort lexicographically in
+        // chronological order, so descending string comparison gives newest first).
+        return assembled.sorted { (myJoinMap[$0.id] ?? "") > (myJoinMap[$1.id] ?? "") }
     }
 
     // MARK: - Invitations
@@ -293,31 +320,35 @@ final class SupabaseService {
             .select()
             .eq("invited_user_id", value: userId)
             .eq("status", value: "pending")
+            .order("created_at", ascending: false)
             .execute()
             .value
 
         guard !invitations.isEmpty else { return [] }
 
-        // 2. Group details
-        let groupIds = invitations.map { $0.groupId }
-        let groups: [SupabaseGroupRecord] = try await client
+        let groupIds   = invitations.map { $0.groupId }
+        let inviterIds = Array(Set(invitations.map { $0.invitedBy }))
+
+        // 2+3. Fetch group details and inviter names in parallel
+        async let groupsFetch: [SupabaseGroupRecord] = client
             .from("groups")
             .select()
             .in("id", values: groupIds)
             .execute()
             .value
 
-        // 3. Inviter names
-        let inviterIds = Array(Set(invitations.map { $0.invitedBy }))
-        let inviters: [SupabaseUserRecord] = try await client
+        async let invitersFetch: [SupabaseUserRecord] = client
             .from("users")
             .select("id, name")
             .in("id", values: inviterIds)
             .execute()
             .value
 
+        let groups  = try await groupsFetch
+        let inviters = try await invitersFetch
+
         // 4. Assemble
-        let groupMap    = Dictionary(uniqueKeysWithValues: groups.map  { ($0.id, $0) })
+        let groupMap    = Dictionary(uniqueKeysWithValues: groups.map   { ($0.id, $0) })
         let inviterMap  = Dictionary(uniqueKeysWithValues: inviters.map { ($0.id, $0.name ?? "Unknown") })
 
         return invitations.compactMap { inv in
@@ -372,8 +403,9 @@ final class SupabaseService {
     }
 
     /// Fetches heart counts for the given couple-group IDs.
-    /// Returns an empty dict on any error so `fetchGroups` degrades gracefully.
-    private func fetchHeartCounts(for groupIds: [String]) async -> [String: Int] {
+    /// Returns nil on query failure so callers can distinguish "no hearts yet"
+    /// (empty dict) from "query failed" (nil) and avoid resetting the display.
+    func fetchHeartCounts(for groupIds: [String]) async -> [String: Int]? {
         guard !groupIds.isEmpty else { return [:] }
         struct HeartRecord: Codable {
             let groupId: String
@@ -393,7 +425,7 @@ final class SupabaseService {
             return Dictionary(uniqueKeysWithValues: records.map { ($0.groupId, $0.count) })
         } catch {
             print("[Supabase] fetchHeartCounts error: \(error)")
-            return [:]
+            return nil  // nil = query failed, distinct from [:] = no hearts yet
         }
     }
 

@@ -25,7 +25,7 @@ const CORS = {
 const JSON_HEADERS = { ...CORS, "Content-Type": "application/json" };
 const MAX_BATCH   = 500;
 const RATE_WINDOW = 60_000;  // 1 minute
-const RATE_LIMIT  = 5;       // max calls per window per user
+const RATE_LIMIT  = 30;      // max calls per window per user
 
 // In-memory rate limiter (per Edge Function instance)
 // For multi-instance production, replace with Upstash Redis.
@@ -140,10 +140,11 @@ serve(async (req: Request) => {
 
   const hashes = await Promise.all(phoneNumbers.map((n) => hmacSha256(n, hashSecret)));
 
-  // Build reverse map: hash → original phone (so we can echo the phone back to the client)
-  const hashToPhone: Record<string, string> = {};
+  // Build reverse map: hash → input array index (so the client can resolve the phone locally
+  // without the server ever transmitting phone numbers back in the response)
+  const hashToIndex: Record<string, number> = {};
   for (let i = 0; i < phoneNumbers.length; i++) {
-    hashToPhone[hashes[i]] = phoneNumbers[i];
+    hashToIndex[hashes[i]] = i;
   }
 
   // 6. Query with service role (to see all phone hashes), then filter
@@ -153,22 +154,25 @@ serve(async (req: Request) => {
     { auth: { persistSession: false } },
   );
 
-  const { data, error } = await supabase
-    .from("users")
-    .select("id, name, phone_hash")
-    .in("phone_hash", hashes)
-    .neq("id", uid); // never return the requesting user
+  // Use RPC instead of .in() — .in() builds a GET query string with all hashes
+  // embedded, which overflows PostgREST's ~8 KB URL limit for users with many
+  // contacts. supabase.rpc() uses POST so the array travels in the body.
+  const { data, error } = await supabase.rpc("match_phone_hashes", {
+    phone_hashes: hashes,
+    exclude_uid:  uid,
+  });
 
   if (error) {
-    console.error("Query error:", error.code);
+    console.error("Query error:", error.message);
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: JSON_HEADERS });
   }
 
-  // Include the original phone so the client can resolve contact names locally
+  // Return inputIndex so the client can resolve the phone from its own local array —
+  // the server never transmits phone numbers in the response body.
   const matches = (data ?? []).map((u: { id: string; name: string | null; phone_hash: string }) => ({
     id: u.id,
     name: u.name,
-    phone: hashToPhone[u.phone_hash] ?? null,
+    inputIndex: hashToIndex[u.phone_hash] ?? -1,
   }));
 
   return new Response(JSON.stringify({ matches }), { headers: JSON_HEADERS });

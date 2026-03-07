@@ -19,7 +19,9 @@ enum EdgeFunctionService {
         struct MatchedUser: Decodable {
             let id: String
             let name: String?
-            let phone: String?
+            /// Index into the original `phoneNumbers` input array — the server never
+            /// echoes phone numbers back. The client resolves the phone locally.
+            let inputIndex: Int
         }
         let matches: [MatchedUser]
     }
@@ -76,8 +78,10 @@ enum EdgeFunctionService {
         switch status {
         case 200:
             let decoded = try JSONDecoder().decode(MatchResponse.self, from: data)
-            return decoded.matches.map {
-                User(id: $0.id, name: $0.name ?? "MoodCanvas User", phoneNumber: $0.phone ?? "")
+            return decoded.matches.compactMap { match in
+                guard match.inputIndex >= 0, match.inputIndex < phoneNumbers.count else { return nil }
+                let phone = phoneNumbers[match.inputIndex]
+                return User(id: match.id, name: match.name ?? "MoodCanvas User", phoneNumber: phone)
             }
         case 429:
             throw MCError.rateLimited
@@ -85,6 +89,63 @@ enum EdgeFunctionService {
             let msg = (try? JSONDecoder().decode(ErrorResponse.self, from: data))?.error
                 ?? "Contact match failed (HTTP \(status))"
             throw MCError.edgeFunction(msg)
+        }
+    }
+
+    // MARK: - invite-by-phone
+
+    /// Stores a deferred phone invitation in Supabase so that when the invitee
+    /// downloads the app and registers, they automatically see the invite.
+    /// Fire-and-forget — errors are logged but not thrown to the caller.
+    static func inviteByPhone(groupId: String, phone: String, jwt: String) async {
+        let url = edgeFunctionURL("invite-by-phone")
+        var req = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONEncoder().encode(["group_id": groupId, "phone": phone])
+        req.timeoutInterval = 10
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: req)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            if status != 200 {
+                print("[Invite] inviteByPhone failed (HTTP \(status)) for phone \(phone.prefix(6))…")
+            }
+        } catch {
+            print("[Invite] inviteByPhone network error: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - send-invite-push
+
+    /// Sends a silent APNs push to a user who has just been invited to a group so
+    /// their app wakes and calls fetchPendingInvitations() immediately.
+    /// Fire-and-forget — errors are logged but not thrown to the caller.
+    static func notifyInvited(groupId: String, invitedUserId: String) async {
+        guard let jwt = KeychainService.load(.supabaseJWT) else {
+            print("[Invite] notifyInvited: no JWT in Keychain — skipping push")
+            return
+        }
+        let url = edgeFunctionURL("send-invite-push")
+        var req = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONEncoder().encode([
+            "group_id": groupId,
+            "invited_user_id": invitedUserId,
+        ])
+        req.timeoutInterval = 10
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: req)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            if status != 200 {
+                print("[Invite] notifyInvited failed (HTTP \(status)) for user \(invitedUserId.prefix(8))…")
+            }
+        } catch {
+            print("[Invite] notifyInvited network error: \(error.localizedDescription)")
         }
     }
 

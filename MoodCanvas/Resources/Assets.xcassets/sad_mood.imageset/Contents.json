@@ -1,4 +1,22 @@
 {
-  "images" : [{ "filename" : "sad_mood.png", "idiom" : "universal", "scale" : "1x" }],
-  "info" : { "author" : "xcode", "version" : 1 }
+  "images" : [
+    {
+      "filename" : "sad_mood.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "sad_mood_3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
 }

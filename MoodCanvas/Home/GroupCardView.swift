@@ -10,19 +10,8 @@ extension Mood {
         case .sad:     return "sad_mood"
         case .angry:   return "angry_mood"
         case .tired:   return "tired_mood"
-        case .excited: return "happy_mood"   // fallback
-        case .chill:   return "tired_mood"   // fallback
-        }
-    }
-
-    /// Image name for the selectable mood button. Nil → emoji fallback.
-    var buttonImageName: String? {
-        switch self {
-        case .happy:   return "happy_mood_button"
-        case .sad:     return "sad_mood_button"
-        case .angry:   return "angry_mood_button"
-        case .tired:   return "tired_mood_button"
-        default:       return nil
+        case .excited: return "happy_mood"
+        case .chill:   return "tired_mood"
         }
     }
 
@@ -40,11 +29,17 @@ struct GroupCardView: View {
 
     private var isCouple: Bool { group.type == .couple }
 
-    private var containerColor: Color {
-        isCouple ? Color(hex: "FDE7EA") : Color(hex: "E4BF89")
+    private var buttonContainerImage: String {
+        isCouple ? "mood_button_container_couples" : "mood_button_container"
     }
-    private var textColor: Color {
-        isCouple ? Color(hex: "51083A") : Color(hex: "3C392A")
+    private var separatorColor: Color {
+        isCouple ? Color(hex: "E9A0B8") : Color(hex: "C4A882")
+    }
+    private var nameColor: Color {
+        isCouple ? Color(hex: "51083A") : Color(hex: "665938")
+    }
+    private var memberColor: Color {
+        isCouple ? Color(hex: "A05070") : Color(hex: "6C6649")
     }
 
     var body: some View {
@@ -67,39 +62,53 @@ struct GroupCardView: View {
             }
 
             // Content
-            VStack(alignment: isCouple ? .center : .leading, spacing: 10) {
+            VStack(alignment: .center, spacing: 10) {
                 // Group name — tappable if a rename callback is provided
-                Group {
-                    if let onRenameTap {
-                        Button(action: onRenameTap) {
-                            Text(group.name)
-                                .font(Font.custom("EBGaramond-SemiBold", size: 26))
-                                .foregroundStyle(textColor)
-                                .multilineTextAlignment(isCouple ? .center : .leading)
-                                .frame(maxWidth: isCouple ? .infinity : nil)
-                        }
-                        .buttonStyle(.plain)
-                    } else {
+                if let onRenameTap {
+                    Button(action: onRenameTap) {
                         Text(group.name)
                             .font(Font.custom("EBGaramond-SemiBold", size: 26))
-                            .foregroundStyle(textColor)
-                            .multilineTextAlignment(isCouple ? .center : .leading)
-                            .frame(maxWidth: isCouple ? .infinity : nil)
+                            .foregroundStyle(nameColor)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.plain)
+                    .padding(.top, 10)
+                } else {
+                    Text(group.name)
+                        .font(Font.custom("EBGaramond-SemiBold", size: 26))
+                        .foregroundStyle(nameColor)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 10)
                 }
 
-                // Member names
-                Text(membersText)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(textColor.opacity(0.75))
-                    .multilineTextAlignment(isCouple ? .center : .leading)
-                    .frame(maxWidth: isCouple ? .infinity : nil)
-                    .lineLimit(2)
+                // Couple: heart counter preview / BFF+Family: member names
+                if isCouple {
+                    HStack(spacing: 5) {
+                        Text("🩷")
+                            .font(.system(size: 14))
+                        Text("\(group.heartCount)")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundStyle(memberColor)
+                    }
+                    .padding(.top, 4)
+                } else {
+                    Text(membersText)
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .foregroundStyle(memberColor)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .lineLimit(2)
+                        .padding(.top, 4)
+                }
 
                 Spacer(minLength: 12)
 
-                // Mood row
+                // Mood row — fixed height so .aspectRatio(1, .fit) buttons
+                // never get a smaller proposed height than their natural width.
                 moodRow
+                    .frame(height: 62)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 20)
@@ -111,7 +120,6 @@ struct GroupCardView: View {
 
     // MARK: - Members text
 
-    /// Current user first, rest in original order.
     private var orderedMembers: [User] {
         var list = group.members
         if let idx = list.firstIndex(where: { $0.id == currentUserId }) {
@@ -125,60 +133,52 @@ struct GroupCardView: View {
         let names = orderedMembers.map { $0.name }
         return isCouple
             ? names.joined(separator: " 💜 ")
-            : names.joined(separator: " · ")
+            : names.joined(separator: " • ")
     }
 
     // MARK: - Mood row
 
     private var moodRow: some View {
-        HStack(spacing: 10) {
-            // User's current mood — no container
-            Group {
-                let mood = group.currentMoods[currentUserId] ?? .happy
-                Image(mood.displayImageName)
-                    .resizable()
-                    .scaledToFit()
-            }
-            .frame(width: 60, height: 60)
-
-            // Separator
-            Image("sep_line")
+        HStack(spacing: 6) {
+            // User's current mood — no container, slightly smaller to give
+            // maximum width to the 4 tappable mood buttons
+            let myMood = group.currentMoods[currentUserId] ?? .happy
+            Image(myMood.displayImageName)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 66)
+                .frame(width: 52, height: 52)
+                .transition(.scale(scale: 0.7).combined(with: .opacity))
+                .id(myMood)
 
-            // Scrollable mood buttons
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(Mood.cardMoods) { mood in
-                        moodButton(mood)
-                    }
+            // Separator
+            Capsule()
+                .fill(separatorColor.opacity(0.7))
+                .frame(width: 1.5, height: 42)
+
+            // No ScrollView — plain HStack so buttons fill all remaining space.
+            // frame(maxWidth:.infinity).aspectRatio(1) makes each button as large
+            // as possible while staying square and showing all 4 without scrolling.
+            HStack(spacing: 4) {
+                ForEach(Mood.cardMoods) { mood in
+                    moodButton(mood)
                 }
-                .padding(.vertical, 2)
             }
         }
     }
 
     private func moodButton(_ mood: Mood) -> some View {
-        Button {
-            onMoodTap(mood)
-        } label: {
-            Group {
-                if let imgName = mood.buttonImageName {
-                    Image(imgName)
+        Button { onMoodTap(mood) } label: {
+            Image(mood.displayImageName)
+                .resizable()
+                .scaledToFit()
+                .padding(7)
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1, contentMode: .fit)
+                .background {
+                    Image(buttonContainerImage)
                         .resizable()
-                        .scaledToFit()
-                        .padding(6)
-                } else {
-                    Text(mood.emoji)
-                        .font(.title2)
+                        .scaledToFill()
                 }
-            }
-            .frame(width: 60, height: 60)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(containerColor)
-            )
         }
         .buttonStyle(.plain)
     }

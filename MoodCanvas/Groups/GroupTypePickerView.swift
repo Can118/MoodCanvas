@@ -32,11 +32,17 @@ struct GroupTypePickerView: View {
 
                     Spacer()
 
-                    // "next" button — navigates to name step
+                    // "next" button — couples go to their own picker; others go to name step
                     NavigationLink {
-                        GroupNameView(selectedType: selectedType, onComplete: { dismiss() })
-                            .environmentObject(groupService)
-                            .environmentObject(authService)
+                        if selectedType == .couple {
+                            CouplePickerView(onComplete: { dismiss() })
+                                .environmentObject(groupService)
+                                .environmentObject(authService)
+                        } else {
+                            GroupNameView(selectedType: selectedType, onComplete: { dismiss() })
+                                .environmentObject(groupService)
+                                .environmentObject(authService)
+                        }
                     } label: {
                         nextButtonLabel
                     }
