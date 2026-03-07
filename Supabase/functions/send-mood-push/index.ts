@@ -10,11 +10,15 @@
  *   APNS_KEY_ID      — 10-character Key ID shown next to the .p8 download
  *   APNS_TEAM_ID     — 10-character Team ID from Apple Developer account page
  *   APNS_BUNDLE_ID   — com.huseyinturkay.moodcanvas.app  (or override)
- *   APNS_ENVIRONMENT — "sandbox" (default, for dev builds) or "production"
+ *
+ * NOTE: APNS_ENVIRONMENT is no longer used. The sandbox-vs-production endpoint
+ * is now determined per token from the apns_environment column in device_tokens.
+ * Debug/Xcode builds store "sandbox"; TestFlight/App Store builds store "production".
  */
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verify } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -68,12 +72,42 @@ async function makeApnsJWT(
   return `${message}.${sig}`;
 }
 
+// ── JWT verification + Handler ───────────────────────────────────────────────
+
+async function verifyJWT(token: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  );
+  const payload = await verify(token, key); // throws if invalid or expired
+  const sub = payload.sub;
+  if (typeof sub !== "string" || !sub) throw new Error("Missing sub claim");
+  return sub;
+}
+
 // ── Handler ──────────────────────────────────────────────────────────────────
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
+    // 0. Verify the caller holds a valid Supabase JWT
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: JSON_HEADERS });
+    }
+    const jwtSecret = Deno.env.get("JWT_SECRET");
+    if (!jwtSecret) throw new Error("JWT_SECRET not configured");
+    let callerId: string;
+    try {
+      callerId = await verifyJWT(authHeader.slice(7), jwtSecret);
+    } catch {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: JSON_HEADERS });
+    }
+
     const { group_id, updated_by } = await req.json();
     if (!group_id || !updated_by) {
       return new Response(
@@ -82,13 +116,32 @@ serve(async (req: Request) => {
       );
     }
 
+    // Caller must be the same user they claim to be — prevents impersonation
+    if (updated_by !== callerId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: JSON_HEADERS });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { persistSession: false } },
     );
 
-    // 1. Get all group members except the person who changed their mood
+    // 1. Verify the caller is actually a member of this group.
+    //    Without this check, any authenticated user who knows a group UUID can spam
+    //    silent pushes to all members of that group indefinitely.
+    const { data: callerMembership } = await supabase
+      .from("group_members")
+      .select("user_id")
+      .eq("group_id", group_id)
+      .eq("user_id", callerId)
+      .maybeSingle();
+
+    if (!callerMembership) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: JSON_HEADERS });
+    }
+
+    // 2. Get all group members except the person who changed their mood
     const { data: members, error: membersErr } = await supabase
       .from("group_members")
       .select("user_id")
@@ -100,11 +153,14 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ sent: 0 }), { headers: JSON_HEADERS });
     }
 
-    // 2. Look up their device tokens
+    // 3. Look up their device tokens with environment
+    //    apns_environment tells us whether to use sandbox or production APNs.
+    //    Mixing them (e.g. sandbox token → production endpoint) causes
+    //    400 BadDeviceToken and the push is silently dropped.
     const userIds = members.map((m: { user_id: string }) => m.user_id);
     const { data: tokenRows, error: tokensErr } = await supabase
       .from("device_tokens")
-      .select("token")
+      .select("token, apns_environment")
       .in("user_id", userIds);
 
     if (tokensErr) throw tokensErr;
@@ -112,14 +168,11 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ sent: 0 }), { headers: JSON_HEADERS });
     }
 
-    // 3. Build APNs auth JWT
+    // 4. Build APNs auth JWT
     const teamId   = Deno.env.get("APNS_TEAM_ID");
     const keyId    = Deno.env.get("APNS_KEY_ID");
     const authKey  = Deno.env.get("APNS_AUTH_KEY");
     const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.huseyinturkay.moodcanvas.app";
-    const apnsHost = Deno.env.get("APNS_ENVIRONMENT") === "production"
-      ? "api.push.apple.com"
-      : "api.sandbox.push.apple.com";
 
     if (!teamId || !keyId || !authKey) {
       throw new Error("APNS_TEAM_ID, APNS_KEY_ID, or APNS_AUTH_KEY secret not configured");
@@ -133,9 +186,17 @@ serve(async (req: Request) => {
     // short-circuit that check.
     const pushPayload = JSON.stringify({ aps: { "content-available": 1 }, "mood-update": 1 });
 
-    // 4. Send silent push to each device
+    // 5. Send silent push to each device using its own APNs environment.
+    //    Debug/Xcode builds register sandbox tokens → must use api.sandbox.push.apple.com.
+    //    TestFlight/App Store builds register production tokens → api.push.apple.com.
+    //    The app stores the correct environment alongside the token on every registration.
     let sent = 0;
-    for (const { token } of tokenRows) {
+    for (const row of tokenRows) {
+      const token = (row as { token: string; apns_environment: string }).token;
+      const tokenEnv = (row as { token: string; apns_environment: string }).apns_environment ?? "sandbox";
+      const apnsHost = tokenEnv === "production"
+        ? "api.push.apple.com"
+        : "api.sandbox.push.apple.com";
       try {
         const res = await fetch(`https://${apnsHost}/3/device/${token}`, {
           method: "POST",
@@ -159,11 +220,11 @@ serve(async (req: Request) => {
           // is permanently dead and the user would re-register on reinstall.
           //
           // 400 BadDeviceToken is intentionally NOT deleted here. It can mean:
-          //   a) APNS_ENVIRONMENT secret is wrong (sandbox vs production mismatch)
+          //   a) apns_environment column on the token row is wrong (sandbox/production mismatch)
           //   b) The token is from a very recent rotation that APNs hasn't propagated yet
           // In both cases, deleting the token permanently breaks push notifications until
           // the user reopens the app. Leaving it means we try once per push cycle, which
-          // is acceptable. Fix the APNS_ENVIRONMENT secret to resolve case (a).
+          // is acceptable. The app corrects case (a) automatically on next launch.
           if (res.status === 410) {
             const { error: deleteErr } = await supabase
               .from("device_tokens")

@@ -1,6 +1,9 @@
 import WidgetKit
 import SwiftUI
 import AppIntents
+import os
+
+private let widgetLog = Logger(subsystem: "com.huseyinturkay.moodcanvas.app", category: "widget")
 
 // MARK: - Timeline Entry
 
@@ -10,6 +13,9 @@ struct MoodEntry: TimelineEntry {
     let configuration: ConfigurationAppIntent
     /// The authenticated user's Firebase UID, used to highlight their selected mood button.
     let currentUserId: String?
+    /// True when the user has no real group for this widget type.
+    /// The widget shows an empty-state prompt instead of mock data.
+    var isEmpty: Bool = false
 }
 
 // MARK: - Timeline Provider
@@ -31,6 +37,23 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
         let defaults = UserDefaults(suiteName: AppGroupConstants.suiteName)
         let currentUserId = defaults?.string(forKey: "widget_current_user_id")
 
+        // ── Force-refresh flag: bypass fast path when a partner push arrives ──
+        // handleMoodUpdatePush() sets widget_force_refresh before calling
+        // reloadAllTimelines(). When this flag is set we must skip the fast path
+        // below and go straight to the Supabase fetch, even if a widgetMood_*
+        // pending key exists from a previous widget tap.
+        //
+        // Why this matters: if a SetMoodIntent background sync ever failed, the
+        // widgetMood_* key is never cleared. Every subsequent timeline() call sees
+        // hasPendingChange = true, takes the fast path, and returns stale cached
+        // data indefinitely — the widget appears stuck no matter how many pushes
+        // arrive. The force-refresh flag overrides this for partner updates.
+        let forceRefresh = defaults?.bool(forKey: "widget_force_refresh") ?? false
+        if forceRefresh {
+            defaults?.removeObject(forKey: "widget_force_refresh")
+            widgetLog.info("force-refresh flag set — skipping fast path")
+        }
+
         // ── Fast path: skip network when an AppIntent just ran ─────────────────
         // Both SetMoodIntent and SendHeartIntent do two things before returning:
         //   1. Write the optimistic result directly into widget_groups (cache)
@@ -43,12 +66,55 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
         // The detached task in the intent clears the key and calls
         // reloadAllTimelines() once Supabase confirms, which triggers the slow
         // path below for the authoritative second update.
+        //
+        // Exception: when forceRefresh is set (partner push just arrived), we
+        // always go to the slow path so stale pending keys don't block the fetch.
         let cachedBeforeFetch = loadGroupsFromCache() ?? []
-        let hasPendingChange = !cachedBeforeFetch.isEmpty && cachedBeforeFetch.contains { g in
+        let hasPendingChange = !forceRefresh && !cachedBeforeFetch.isEmpty && cachedBeforeFetch.contains { g in
             defaults?.string(forKey: "widgetMood_\(g.id)") != nil ||
             defaults?.object(forKey: "widgetHeartCount_\(g.id)") as? Int != nil
         }
+
+        // ── Fast-path loop expiry ──────────────────────────────────────────────
+        // If syncMood() fails (network error, JWT expiry), the widgetMood_* key
+        // is never cleared, trapping timeline() in a 30-second fast-path loop.
+        // That loop permanently suppresses the 15-minute slow-path Supabase
+        // fetch, so partner mood changes are NEVER shown — even hours later.
+        //
+        // Fix: track when the fast path was first entered. After 2 minutes,
+        // clear all stale pending keys and fall through to the slow path, which
+        // fetches fresh data from Supabase and sets the 15-minute timeline policy.
+        //
+        // Key: widget_fast_path_loop_start (Double epoch seconds; absent = not looping)
+        // handleMoodUpdatePush() resets this key whenever a partner push arrives,
+        // so a push-triggered timeline() always starts a clean cycle.
+        var pendingKeyExpired = false
         if hasPendingChange {
+            let now = Date().timeIntervalSince1970
+            let loopStart = defaults?.double(forKey: "widget_fast_path_loop_start") ?? 0
+            if loopStart == 0 {
+                // First cycle in this fast-path run — start the expiry clock.
+                defaults?.set(now, forKey: "widget_fast_path_loop_start")
+            } else if now - loopStart > 120 { // 2-minute threshold
+                // Pending key has been stuck for 2+ minutes — treat it as stale.
+                pendingKeyExpired = true
+                defaults?.removeObject(forKey: "widget_fast_path_loop_start")
+                for g in cachedBeforeFetch {
+                    defaults?.removeObject(forKey: "widgetMood_\(g.id)")
+                    defaults?.removeObject(forKey: "widgetHeartCount_\(g.id)")
+                    if let uid = currentUserId {
+                        defaults?.removeObject(forKey: "widgetMoodTime_\(g.id)_\(uid)")
+                    }
+                }
+                widgetLog.warning("pending keys expired (>2 min) — forcing slow path")
+            }
+        } else {
+            // No pending change this cycle — reset the timer so a future tap
+            // starts a clean 2-minute expiry window.
+            defaults?.removeObject(forKey: "widget_fast_path_loop_start")
+        }
+
+        if hasPendingChange && !pendingKeyExpired {
             // Apply pending keys on top of cache — handles the race where
             // handleMoodUpdatePush() overwrote widget_groups with stale Supabase
             // data (partner's push) before our background task finished syncing.
@@ -156,11 +222,18 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
         // Request a refresh as a fallback safety net.
         // The primary update path is via silent APNs push (near-instant).
         // Simulator can't receive APNs pushes so it must rely on polling;
-        // use 30-second intervals there. On real devices 2 minutes is enough.
+        // use 30-second intervals there.
+        //
+        // On real devices, WidgetKit's daily refresh budget is ~40-70 reloads/day
+        // per widget. Polling at 1 minute exhausts the entire budget in under an
+        // hour, after which WidgetKit silently throttles ALL reloadAllTimelines()
+        // calls — including those triggered by silent push notifications.
+        // 15-minute intervals keep polling well within budget and leave headroom
+        // for push-triggered reloads, which are the primary update mechanism.
         #if targetEnvironment(simulator)
         let nextUpdate = Calendar.current.date(byAdding: .second, value: 30, to: .now) ?? .now
         #else
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 1, to: .now) ?? .now
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: .now) ?? .now
         #endif
         return Timeline(entries: [entry], policy: .after(nextUpdate))
     }
@@ -196,53 +269,125 @@ struct MoodWidgetProvider: AppIntentTimelineProvider {
 /// Delegates all logic to MoodWidgetProvider, bridging CoupleConfigurationIntent.
 struct CoupleWidgetProvider: AppIntentTimelineProvider {
     private let core = MoodWidgetProvider()
-    func placeholder(in context: Context) -> MoodEntry { core.placeholder(in: context) }
+
+    func placeholder(in context: Context) -> MoodEntry {
+        // Always use the couple preview so the placeholder renders the couple design,
+        // not the BFF list layout that core.placeholder() returns.
+        MoodEntry(date: .now, group: .couplePreview, configuration: ConfigurationAppIntent(), currentUserId: nil)
+    }
+
     func snapshot(for configuration: CoupleConfigurationIntent, in context: Context) async -> MoodEntry {
         var c = ConfigurationAppIntent()
         // Gallery preview (no group selected yet): show the user's first couple group from cache.
-        // Falls back to core's .preview placeholder if no couple group exists in cache.
         c.group = configuration.group ?? previewEntity(filter: { $0.type == .couple })
-        return await core.snapshot(for: c, in: context)
+        let entry = await core.snapshot(for: c, in: context)
+        // core falls back to .preview (BFF type) when no couple group exists in cache.
+        // Override so the widget gallery always shows the correct couple design.
+        guard entry.group.type == .couple else {
+            return MoodEntry(date: entry.date, group: .couplePreview, configuration: c, currentUserId: entry.currentUserId)
+        }
+        return entry
     }
+
     func timeline(for configuration: CoupleConfigurationIntent, in context: Context) async -> Timeline<MoodEntry> {
-        var c = ConfigurationAppIntent(); c.group = configuration.group
-        return await core.timeline(for: c, in: context)
+        var c = ConfigurationAppIntent()
+        // Pre-select the first couple group so pick() finds the right type even when
+        // the user hasn't explicitly configured this widget instance yet.
+        c.group = configuration.group ?? previewEntity(filter: { $0.type == .couple })
+        let tl = await core.timeline(for: c, in: context)
+        // If core fell back to a non-couple or preview group, no real couple group exists.
+        // Show an empty-state prompt instead of misleading mock data.
+        if let entry = tl.entries.first,
+           entry.group.type == .couple,
+           !isPreviewGroup(entry.group) {
+            return tl
+        }
+        let base = tl.entries.first
+        let empty = MoodEntry(date: base?.date ?? .now, group: .couplePreview,
+                              configuration: c, currentUserId: base?.currentUserId, isEmpty: true)
+        return Timeline(entries: [empty], policy: tl.policy)
     }
 }
 
 /// Delegates all logic to MoodWidgetProvider, bridging BFFConfigurationIntent (large widget).
 struct BFFWidgetProvider: AppIntentTimelineProvider {
     private let core = MoodWidgetProvider()
-    func placeholder(in context: Context) -> MoodEntry { core.placeholder(in: context) }
+
+    func placeholder(in context: Context) -> MoodEntry {
+        MoodEntry(date: .now, group: .bffLargePreview, configuration: ConfigurationAppIntent(), currentUserId: nil)
+    }
+
     func snapshot(for configuration: BFFConfigurationIntent, in context: Context) async -> MoodEntry {
         var c = ConfigurationAppIntent()
-        // Gallery preview: show the user's first BFF/family group with 4+ members from cache.
         c.group = configuration.group ?? previewEntity(filter: {
             ($0.type == .bff || $0.type == .family) && $0.members.count >= 4
         })
-        return await core.snapshot(for: c, in: context)
+        let entry = await core.snapshot(for: c, in: context)
+        // Fall back to bffLargePreview so the gallery shows "Sisters without Misters".
+        // Must also check the ID — core falls back to .preview which has 4 members,
+        // so members.count >= 4 alone would incorrectly pass and return the generic mock.
+        guard entry.group.members.count >= 4, entry.group.id != "preview" else {
+            return MoodEntry(date: entry.date, group: .bffLargePreview, configuration: c, currentUserId: entry.currentUserId)
+        }
+        return entry
     }
+
     func timeline(for configuration: BFFConfigurationIntent, in context: Context) async -> Timeline<MoodEntry> {
-        var c = ConfigurationAppIntent(); c.group = configuration.group
-        return await core.timeline(for: c, in: context)
+        var c = ConfigurationAppIntent()
+        c.group = configuration.group ?? previewEntity(filter: {
+            ($0.type == .bff || $0.type == .family) && $0.members.count >= 4
+        })
+        let tl = await core.timeline(for: c, in: context)
+        if let entry = tl.entries.first,
+           (entry.group.type == .bff || entry.group.type == .family),
+           entry.group.members.count >= 4,
+           !isPreviewGroup(entry.group) {
+            return tl
+        }
+        let base = tl.entries.first
+        let empty = MoodEntry(date: base?.date ?? .now, group: .bffLargePreview,
+                              configuration: c, currentUserId: base?.currentUserId, isEmpty: true)
+        return Timeline(entries: [empty], policy: tl.policy)
     }
 }
 
 /// Delegates all logic to MoodWidgetProvider, bridging BFFMediumConfigurationIntent (medium widget).
 struct BFFMediumWidgetProvider: AppIntentTimelineProvider {
     private let core = MoodWidgetProvider()
-    func placeholder(in context: Context) -> MoodEntry { core.placeholder(in: context) }
+
+    func placeholder(in context: Context) -> MoodEntry {
+        MoodEntry(date: .now, group: .bffThreePreview, configuration: ConfigurationAppIntent(), currentUserId: nil)
+    }
+
     func snapshot(for configuration: BFFMediumConfigurationIntent, in context: Context) async -> MoodEntry {
         var c = ConfigurationAppIntent()
-        // Gallery preview: show the user's first BFF/family group with 2–3 members from cache.
         c.group = configuration.group ?? previewEntity(filter: {
             ($0.type == .bff || $0.type == .family) && $0.members.count <= 3
         })
-        return await core.snapshot(for: c, in: context)
+        let entry = await core.snapshot(for: c, in: context)
+        // Fall back to bffThreePreview so the gallery shows "OnlyFriends", not the generic mock.
+        guard entry.group.members.count <= 3, entry.group.type != .couple else {
+            return MoodEntry(date: entry.date, group: .bffThreePreview, configuration: c, currentUserId: entry.currentUserId)
+        }
+        return entry
     }
+
     func timeline(for configuration: BFFMediumConfigurationIntent, in context: Context) async -> Timeline<MoodEntry> {
-        var c = ConfigurationAppIntent(); c.group = configuration.group
-        return await core.timeline(for: c, in: context)
+        var c = ConfigurationAppIntent()
+        c.group = configuration.group ?? previewEntity(filter: {
+            ($0.type == .bff || $0.type == .family) && $0.members.count <= 3
+        })
+        let tl = await core.timeline(for: c, in: context)
+        if let entry = tl.entries.first,
+           (entry.group.type == .bff || entry.group.type == .family),
+           entry.group.members.count <= 3,
+           !isPreviewGroup(entry.group) {
+            return tl
+        }
+        let base = tl.entries.first
+        let empty = MoodEntry(date: base?.date ?? .now, group: .bffThreePreview,
+                              configuration: c, currentUserId: base?.currentUserId, isEmpty: true)
+        return Timeline(entries: [empty], policy: tl.policy)
     }
 }
 
@@ -251,6 +396,16 @@ struct BFFMediumWidgetProvider: AppIntentTimelineProvider {
 private func previewEntity(filter: (MoodGroup) -> Bool) -> GroupAppEntity? {
     guard let group = mergedGroups().first(where: filter) else { return nil }
     return GroupAppEntity(id: group.id, name: group.name, typeName: group.type.displayName)
+}
+
+/// Returns true when `group` is a static preview/mock placeholder, not a real user group.
+/// Used by timeline() wrappers to detect the "no real group found" fallback.
+private func isPreviewGroup(_ group: MoodGroup) -> Bool {
+    let knownPreviewIds: Set<String> = [
+        "preview", "couple-preview", "bff-three-preview",
+        "bff-large-preview", "family-preview"
+    ]
+    return knownPreviewIds.contains(group.id) || group.id.hasPrefix("mock-")
 }
 
 // MARK: - Container Background (family-aware)

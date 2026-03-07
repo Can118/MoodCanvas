@@ -1,4 +1,7 @@
 import Foundation
+import os
+
+private let widgetDataLog = Logger(subsystem: "com.huseyinturkay.moodcanvas.app", category: "widget")
 
 /// Lightweight Supabase client for use inside the widget extension.
 ///
@@ -151,11 +154,11 @@ struct WidgetDataService {
             let status = (response as? HTTPURLResponse)?.statusCode ?? 0
             guard status == 200 else {
                 let body = String(data: data, encoding: .utf8) ?? "(no body)"
-                print("[Widget] fetchGroups failed — HTTP \(status): \(body)")
+                widgetDataLog.error("fetchGroups failed — HTTP \(status): \(body)")
                 return []
             }
             var groups = try JSONDecoder().decode([MoodGroup].self, from: data)
-            print("[Widget] fetchGroups returned \(groups.count) group(s)")
+            widgetDataLog.info("fetchGroups returned \(groups.count) group(s)")
 
             // Merge heart counts for couple groups.
             // Also load previously cached counts as a fallback — if the couple_hearts
@@ -196,7 +199,7 @@ struct WidgetDataService {
             }
             return groups
         } catch {
-            print("[Widget] fetchGroups error: \(error)")
+            widgetDataLog.error("fetchGroups error: \(error)")
             return []
         }
     }

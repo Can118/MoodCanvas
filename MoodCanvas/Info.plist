@@ -50,6 +50,8 @@
 	</dict>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -69,6 +71,11 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Automatic</string>
+	<!-- Declares that the app only uses standard HTTPS/TLS (iOS built-in),
+	     which is exempt from US export compliance regulations.
+	     Eliminates the "Missing Compliance" warning in App Store Connect. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<!-- Disable Firebase's runtime AppDelegate method swizzling.
 	     In SwiftUI apps using @UIApplicationDelegateAdaptor, Firebase's swizzling
 	     intercepts didRegisterForRemoteNotificationsWithDeviceToken before our code

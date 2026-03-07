@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		004BA8573613ABAA91160FCA /* EBGaramond-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CDACCF85AFE2F6C68A8C1C5D /* EBGaramond-Medium.ttf */; };
+		02FDAD4E8EA5BF714B856FBE /* CouplePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD822076A6224887E7284864 /* CouplePickerView.swift */; };
 		04D27B0C9F232C86E00EA621 /* EmptyHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA45C663D165576188DFE6F0 /* EmptyHomeView.swift */; };
 		0C8F61C3FF9DFA2DF32619F0 /* GroupRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7651A7FFA951F8B23CDAB5 /* GroupRowView.swift */; };
 		0C9DC2B58B022D44ACCB91C3 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
@@ -44,7 +45,6 @@
 		55DF239EAF870FD7B10C1F84 /* Messages.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */; };
 		5B85EBA8DED9DCFFBD5B2226 /* EBGaramond-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F4ED2506906AA2B7BF0164B8 /* EBGaramond-Bold.ttf */; };
 		5F3E015482B0F5040F484030 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805CE2719F0CF51C922BEB8E /* AuthService.swift */; };
-		6105544F8CD0FF11378B88E7 /* MoodCanvasiMessage.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FF4A8EC1190321BBF047D12F /* MoodCanvasiMessage.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		66970FEC6B09DB14CA31EE09 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6625BFF33FE7952C4035E7 /* User.swift */; };
 		69BCB1948D837352F28DA261 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6D9B6307BE0392945C86E1B /* SwiftUI.framework */; };
 		6FBB6193AE6DF53A5BB35EC5 /* GroupCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDDD98687F129F7A54A0F8F /* GroupCardView.swift */; };
@@ -81,6 +81,7 @@
 		D81C779A143CEC5AE0BD15D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5677F047C7D64A2E8F0B3A5 /* Assets.xcassets */; };
 		D8FF08FF58C2DB11AE941F6E /* WidgetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC17E476A932501434573E6 /* WidgetDataService.swift */; };
 		D978006775A02CD47061DC14 /* MessageComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B204F308B66040938B05413C /* MessageComposeView.swift */; };
+		DA1E5639593DE084B4E7CC14 /* CoupleGroupNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D865E24BC4DF85EEEDB3DB42 /* CoupleGroupNameView.swift */; };
 		DE0559F410A3CAF9B69CE7F7 /* MoodWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F30B166166DFAF22644D5D /* MoodWidgetEntryView.swift */; };
 		E0560A21BEBA6CF712EA683D /* EBGaramond-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CDEAC54DA5064E0582A4CE4D /* EBGaramond-ExtraBoldItalic.ttf */; };
 		E16B86A9A1EE9B6322128547 /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1DADC44B78814323E109A98 /* ContactPickerView.swift */; };
@@ -93,13 +94,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		CE5A68CEEC20E5A90EAB4B73 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 416EB94BE12CA282F498D3F4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 1A7639C72F73514C8569AF22;
-			remoteInfo = MoodCanvasiMessage;
-		};
 		D402834F5A93FD7DE06FB711 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 416EB94BE12CA282F498D3F4 /* Project object */;
@@ -117,7 +111,6 @@
 			dstSubfolderSpec = 13;
 			files = (
 				1AA663310D024A85E4D3D49B /* MoodCanvasWidget.appex in Embed Foundation Extensions */,
-				6105544F8CD0FF11378B88E7 /* MoodCanvasiMessage.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -184,12 +177,14 @@
 		C54F2092B4A16D5A53FD59D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C674996366F59315A111FCC7 /* MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
 		CCC7BA15CF332AB8351CE15A /* EBGaramond-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
+		CD822076A6224887E7284864 /* CouplePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CouplePickerView.swift; sourceTree = "<group>"; };
 		CDACCF85AFE2F6C68A8C1C5D /* EBGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Medium.ttf"; sourceTree = "<group>"; };
 		CDDDD98687F129F7A54A0F8F /* GroupCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupCardView.swift; sourceTree = "<group>"; };
 		CDEAC54DA5064E0582A4CE4D /* EBGaramond-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		CE5839D65AAD602CA4384E73 /* PhoneNumberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneNumberView.swift; sourceTree = "<group>"; };
 		CFCECCBE38A5E3B2DCA8CCCF /* Messages.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Messages.framework; path = System/Library/Frameworks/Messages.framework; sourceTree = SDKROOT; };
 		D1DADC44B78814323E109A98 /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPickerView.swift; sourceTree = "<group>"; };
+		D865E24BC4DF85EEEDB3DB42 /* CoupleGroupNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoupleGroupNameView.swift; sourceTree = "<group>"; };
 		DAEEA6D130696974FEA897B0 /* NameEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameEntryView.swift; sourceTree = "<group>"; };
 		DCDE44E828745F8EDA0438C1 /* EBGaramond-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "EBGaramond-Medium.ttf"; sourceTree = "<group>"; };
 		DD3C199368F42F421C2C366C /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
@@ -307,6 +302,8 @@
 			children = (
 				3D2A11F91A0EF845D4F675D8 /* AddMembersView.swift */,
 				D1DADC44B78814323E109A98 /* ContactPickerView.swift */,
+				D865E24BC4DF85EEEDB3DB42 /* CoupleGroupNameView.swift */,
+				CD822076A6224887E7284864 /* CouplePickerView.swift */,
 				84CE1E21D51FD00C0228DD4B /* CreateGroupView.swift */,
 				89F9C8DE73F378EF90EFF03F /* EditGroupNameSheet.swift */,
 				A2CED66F4CDBB6BE0C0EF855 /* GroupAddFriendsView.swift */,
@@ -538,7 +535,6 @@
 			);
 			dependencies = (
 				2141E0A359B99317296EF30C /* PBXTargetDependency */,
-				74C486B95CAD4570F7BC76C4 /* PBXTargetDependency */,
 			);
 			name = MoodCanvas;
 			packageProductDependencies = (
@@ -646,6 +642,8 @@
 				E16B86A9A1EE9B6322128547 /* ContactPickerView.swift in Sources */,
 				FE76DA619BE5F04DFC164E24 /* ContactsService.swift in Sources */,
 				D631B1D03C82818581133EC0 /* ContentView.swift in Sources */,
+				DA1E5639593DE084B4E7CC14 /* CoupleGroupNameView.swift in Sources */,
+				02FDAD4E8EA5BF714B856FBE /* CouplePickerView.swift in Sources */,
 				92707DE5272A85C64AB4D045 /* CreateGroupView.swift in Sources */,
 				51CEB2CA52445ED33DD6F37E /* EdgeFunctionService.swift in Sources */,
 				4BD2B4EEE0955D4F70614E5D /* EditGroupNameSheet.swift in Sources */,
@@ -717,11 +715,6 @@
 			isa = PBXTargetDependency;
 			target = 9CA8EBA7DD8353DB3869D0A6 /* MoodCanvasWidget */;
 			targetProxy = D402834F5A93FD7DE06FB711 /* PBXContainerItemProxy */;
-		};
-		74C486B95CAD4570F7BC76C4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 1A7639C72F73514C8569AF22 /* MoodCanvasiMessage */;
-			targetProxy = CE5A68CEEC20E5A90EAB4B73 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

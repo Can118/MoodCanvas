@@ -3,12 +3,17 @@ import SwiftUI
 struct GroupNameView: View {
     @EnvironmentObject var groupService: GroupService
     @EnvironmentObject var authService: AuthService
+    @AppStorage("isPremium") private var isPremium = false
 
     let selectedType: GroupType
     let onComplete: () -> Void
 
     @State private var groupName = ""
     @FocusState private var isFocused: Bool
+    @State private var proceedToContacts = false
+    @State private var showPaywall = false
+
+    private static let freeGroupLimit = 3
 
     private var isValid: Bool {
         !groupName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -52,14 +57,14 @@ struct GroupNameView: View {
                 Spacer()
 
                 // Next button
-                NavigationLink {
-                    GroupAddFriendsView(
-                        selectedType: selectedType,
-                        groupName: groupName,
-                        onComplete: onComplete
-                    )
-                    .environmentObject(groupService)
-                    .environmentObject(authService)
+                Button {
+                    #if !DEBUG
+                    guard isPremium || groupService.groups.count < Self.freeGroupLimit else {
+                        showPaywall = true
+                        return
+                    }
+                    #endif
+                    proceedToContacts = true
                 } label: {
                     nextButtonLabel
                 }
@@ -72,6 +77,20 @@ struct GroupNameView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { isFocused = true }
+        .navigationDestination(isPresented: $proceedToContacts) {
+            GroupAddFriendsView(
+                selectedType: selectedType,
+                groupName: groupName,
+                onComplete: onComplete
+            )
+            .environmentObject(groupService)
+            .environmentObject(authService)
+        }
+        .sheet(isPresented: $showPaywall, onDismiss: {
+            if isPremium { proceedToContacts = true }
+        }) {
+            PaywallView()
+        }
     }
 
     // MARK: - Next button
